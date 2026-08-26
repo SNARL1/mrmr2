@@ -43,16 +43,16 @@
 #' translocation, and survey data, along with a list of data formatted for
 #' use in a mark recapture model (with name 'stan_d').
 #' @examples
-#' library(mrmr)
+#' library(mrmr2)
 #' library(readr)
 #'
 #' captures <- system.file('extdata', 'capture-example.csv',
-#'     package = 'mrmr') %>%
+#'     package = 'mrmr2') %>%
 #'   read_csv
 #' translocations <- system.file('extdata', 'translocation-example.csv',
-#'     package = 'mrmr') %>%
+#'     package = 'mrmr2') %>%
 #'   read_csv
-#' surveys <- system.file('extdata', 'survey-example.csv', package = 'mrmr') %>%
+#' surveys <- system.file('extdata', 'survey-example.csv', package = 'mrmr2') %>%
 #'   read_csv
 #'
 #' # read and clean the data using defaults
@@ -120,7 +120,7 @@ clean_data <- function(captures, surveys,
                "animals. These records should be filtered out prior to use.",
                "Known removals (including dead animals encountered on surveys)",
                "can be accounted for with the 'removals' argument to",
-               "mrmr::clean_data()."))
+               "mrmr2::clean_data()."))
   }
 
 

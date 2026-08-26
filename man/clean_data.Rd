@@ -68,16 +68,16 @@ three files are available, specifying capture, survey, and (optional)
 translocation data.
 }
 \examples{
-library(mrmr)
+library(mrmr2)
 library(readr)
 
 captures <- system.file('extdata', 'capture-example.csv',
-    package = 'mrmr') \%>\%
+    package = 'mrmr2') \%>\%
   read_csv
 translocations <- system.file('extdata', 'translocation-example.csv',
-    package = 'mrmr') \%>\%
+    package = 'mrmr2') \%>\%
   read_csv
-surveys <- system.file('extdata', 'survey-example.csv', package = 'mrmr') \%>\%
+surveys <- system.file('extdata', 'survey-example.csv', package = 'mrmr2') \%>\%
   read_csv
 
 # read and clean the data using defaults

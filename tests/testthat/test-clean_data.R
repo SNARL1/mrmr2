@@ -2,11 +2,11 @@ library(readr)
 library(dplyr)
 
 captures <- read_csv(system.file("extdata", "capture-example.csv",
-                                 package = "mrmr"))
+                                 package = "mrmr2"))
 translocations <- read_csv(system.file("extdata", "translocation-example.csv",
-                                       package = "mrmr"))
+                                       package = "mrmr2"))
 surveys <- read_csv(system.file("extdata", "survey-example.csv",
-                                package = "mrmr"))
+                                package = "mrmr2"))
 
 
 test_that("clean_data returns the right elements", {
@@ -97,15 +97,15 @@ test_that("surivival formulas create correct design matrices", {
 test_that("dead captures raise errors", {
   captures <- system.file("extdata",
                           "equid-captures.csv",
-                          package = "mrmr") %>%
+                          package = "mrmr2") %>%
     read_csv
   surveys <- system.file("extdata",
                          "equid-surveys.csv",
-                         package = "mrmr") %>%
+                         package = "mrmr2") %>%
     read_csv
   removals <- system.file("extdata",
                           "equid-removals.csv",
-                          package = "mrmr") %>%
+                          package = "mrmr2") %>%
     read_csv
 
   expect_error(clean_data(captures, surveys, removals = removals),
@@ -137,16 +137,16 @@ test_that("recruitment warning is printed when no natural recruits", {
 test_that("Misnamed removal date columns raise errors", {
   captures <- system.file("extdata",
                           "equid-captures.csv",
-                          package = "mrmr") %>%
+                          package = "mrmr2") %>%
     read_csv %>%
     filter(capture_animal_state != "dead")
   surveys <- system.file("extdata",
                          "equid-surveys.csv",
-                         package = "mrmr") %>%
+                         package = "mrmr2") %>%
     read_csv
   removals <- system.file("extdata",
                           "equid-removals.csv",
-                          package = "mrmr") %>%
+                          package = "mrmr2") %>%
     read_csv %>%
     rename(remove_date = removal_date)
 
@@ -157,16 +157,16 @@ test_that("Misnamed removal date columns raise errors", {
 test_that("Misnamed tag id columns raise errors", {
   captures <- system.file("extdata",
                           "equid-captures.csv",
-                          package = "mrmr") %>%
+                          package = "mrmr2") %>%
     read_csv %>%
     filter(capture_animal_state != "dead")
   surveys <- system.file("extdata",
                          "equid-surveys.csv",
-                         package = "mrmr") %>%
+                         package = "mrmr2") %>%
     read_csv
   removals <- system.file("extdata",
                           "equid-removals.csv",
-                          package = "mrmr") %>%
+                          package = "mrmr2") %>%
     read_csv %>%
     rename(pit_tag_ref = pit_tag_id)
 

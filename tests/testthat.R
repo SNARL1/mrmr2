@@ -1,4 +1,4 @@
 library(testthat)
-library(mrmr)
+library(mrmr2)
 
-test_check("mrmr")
+test_check("mrmr2")
