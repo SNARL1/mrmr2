@@ -48,15 +48,29 @@ plot_model <- function(model, what) {
       .data$release_date
     )
 
-    p <- model$m_fit$draws('s', format = "draws_df") %>%
+    # Only pull the latent-state draws ("s") for translocated individuals,
+    # rather than the full M x T array for every real and pseudo-individual
+    # in the augmented superpopulation. Filtering via `draws(variables = )`
+    # before pivoting avoids materializing the (much larger) unfiltered
+    # array, which can otherwise dominate this function's memory use.
+    pit_tag_ids <- dimnames(model$data$stan_d$Y)[[1]]
+    n_periods <- ncol(model$data$stan_d$Y)
+    transloc_idx <- which(
+      pit_tag_ids %in% as.character(model$data$translocations$pit_tag_id)
+    )
+    s_varnames <- paste0(
+      "s[", rep(transloc_idx, each = n_periods), ",",
+      rep(seq_len(n_periods), times = length(transloc_idx)), "]"
+    )
+
+    p <- model$m_fit$draws(variables = s_varnames, format = "draws_df") %>%
       tidyr::pivot_longer(tidyselect::starts_with('s')) %>%
       suppressWarnings() %>%
       mutate(get_numeric_indices(.data$name)) %>%
       rename(
         primary_period = .data$index_2
       ) %>%
-      mutate(pit_tag_id = dimnames(model$data$stan_d$Y)[[1]][.data$index_1]) %>%
-      filter(.data$pit_tag_id %in% as.character(model$data$translocations$pit_tag_id)) %>%
+      mutate(pit_tag_id = pit_tag_ids[.data$index_1]) %>%
       left_join(transloc_dates, by = "pit_tag_id") %>%
       group_by(.data$release_date, .data$primary_period, .data$.draw) %>%
       summarize(fraction_alive = mean(.data$value == 2), .groups = "drop") %>%

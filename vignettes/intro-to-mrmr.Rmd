@@ -1,38 +1,44 @@
 ---
-title: "An introduction to mrmr"
+title: "An introduction to mrmr2"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{intro-to-mrmr}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{An introduction to mrmr2}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>", 
-  fig.width = 7, 
+  comment = "#>",
+  fig.width = 7,
   fig.height = 3.5
 )
 ```
 
-The `mrmr` package is designed to simplify and expedite mark recapture data 
-processing, parameter estimation, and visualization for a narrow class of 
-mark recapture data (namely, those collected by the Sierra Nevada Amphibian 
-Research Group).
+The `mrmr2` package is designed to simplify and expedite mark recapture
+data processing, parameter estimation, and visualization for a narrow
+class of mark recapture data (namely, those collected by the Sierra
+Nevada Amphibian Research Group). It extends the original `mrmr` package
+with optional detection-heterogeneity random effects (see [Detection
+random-effect models](#detection-re)) and a lower-memory survival
+plotting method, and can be installed alongside `mrmr` without conflict.
 
 # Workflow overview
 
 The typical workflow involves three steps:
 
-1. Cleaning mark recapture data with `mrmr::clean_data()`
-2. Fitting a mark recapture model with `mrmr::fit_model()`
-3. Visualizing results with `mrmr::plot_model()`
+1.  Cleaning mark recapture data with `mrmr2::clean_data()`
+2.  Fitting a mark recapture model with `mrmr2::fit_model()`
+3.  Visualizing results with `mrmr2::plot_model()`
 
 ## Data specifications
 
-The package comes with example data that illustrate the expected format. 
-Three files are needed. 
+The package comes with example data that illustrate the expected format.
+Three files are needed.
 
 The first file specifies capture data:
 
@@ -40,44 +46,44 @@ The first file specifies capture data:
 library(dplyr)
 library(readr)
 library(tibble)
-library(mrmr)
+library(mrmr2)
 ```
 
 ```{r show-capture-data}
 captures <- system.file("extdata", 
                                 "capture-example.csv", 
-                                package = "mrmr") %>%
+                                package = "mrmr2") %>%
   read_csv
 
 glimpse(captures)
 ```
 
-Note that the `system.file` function generates a path to the 
-`capture-example.csv` file, but in a real application, you would likely use a 
-path to a local file (real data, not the example data included in the package).
-The files must be formatted with the same columns and conventions uesd in the 
-example data. 
-Each row in this file represents a capture or recapture event.
+Note that the `system.file` function generates a path to the
+`capture-example.csv` file, but in a real application, you would likely
+use a path to a local file (real data, not the example data included in
+the package). The files must be formatted with the same columns and
+conventions uesd in the example data. Each row in this file represents a
+capture or recapture event.
 
-The second file specifies translocation data: 
+The second file specifies translocation data:
 
 ```{r show-trans-data}
 translocations <- system.file("extdata", 
                                       "translocation-example.csv", 
-                                      package = "mrmr") %>%
+                                      package = "mrmr2") %>%
   read_csv
 
 glimpse(translocations)
 ```
 
-Each row corresponds to a translocation event of one unique individual. 
+Each row corresponds to a translocation event of one unique individual.
 
 The third file specifies survey-level data:
 
 ```{r show-survey-data}
 surveys <- system.file("extdata", 
                                "survey-example.csv", 
-                                package = "mrmr") %>%
+                                package = "mrmr2") %>%
   read_csv
 
 glimpse(surveys)
@@ -87,30 +93,30 @@ Here, each row is a unique survey.
 
 ## Data processing
 
-To load and process the data, provide paths to the data files as 
-arguments to the `mrmr::clean_data()` function:
+To load and process the data, provide paths to the data files as
+arguments to the `mrmr2::clean_data()` function:
 
 ```{r clean-data, message=FALSE}
 data <- clean_data(captures, surveys, translocations)
 ```
 
-The output provides data frames as list elements, and a list element called
-`stan_d`, which contains data that has been pre-processed for model fitting. 
+The output provides data frames as list elements, and a list element
+called `stan_d`, which contains data that has been pre-processed for
+model fitting.
 
 ### Including detection/non-detection covariates
 
-Survey-level covariates that might affect the probability of detection can 
-be included via the `capture_formula` argument to `clean_data`. 
-**Note:** it is a good idea to ensure that any continuous covariates are 
-rescaled prior to using them as covariates to have mean = 0 and unit standard 
-deviation. 
-This can be acheived by adding a column to the `captures` data
-Using a covariate value like `year`, which typically has a mean in the thousands
-and a standard deviation far from one will almost assurredly result in 
-numerical issues when fitting a model. 
+Survey-level covariates that might affect the probability of detection
+can be included via the `capture_formula` argument to `clean_data`.
+**Note:** it is a good idea to ensure that any continuous covariates are
+rescaled prior to using them as covariates to have mean = 0 and unit
+standard deviation. This can be acheived by adding a column to the
+`captures` data Using a covariate value like `year`, which typically has
+a mean in the thousands and a standard deviation far from one will
+almost assurredly result in numerical issues when fitting a model.
 
-Assuming we wanted to include a covariate for detection like `person_hours`, 
-we can do so as follows:
+Assuming we wanted to include a covariate for detection like
+`person_hours`, we can do so as follows:
 
 ```{r detection-covariate, message=FALSE, eval=FALSE}
 # center and scale the covariate
@@ -124,14 +130,14 @@ data <- clean_data(captures, surveys, translocations,
 
 ### Including survival covariates
 
-Individual-level survival covariates can be included optionally via the 
-`survival_formula` and `survival_fill_value` arguments. 
-Both of these must be specified, because covariate values for pseudo-individuals 
-must be filled in (they are never observed).
-So, for example, to evaluate the effect of an experimental treatment, if some 
-individuals belong to a "treatment" group and others belong to an "control" 
-group, then a group must be specified as a fill value (e.g., "wild-caught" or 
-"control", depending on the experiment):
+Individual-level survival covariates can be included optionally via the
+`survival_formula` and `survival_fill_value` arguments. Both of these
+must be specified, because covariate values for pseudo-individuals must
+be filled in (they are never observed). So, for example, to evaluate the
+effect of an experimental treatment, if some individuals belong to a
+"treatment" group and others belong to an "control" group, then a group
+must be specified as a fill value (e.g., "wild-caught" or "control",
+depending on the experiment):
 
 ```{r survival-covariate, message=FALSE, eval=FALSE}
 # specify the formula
@@ -140,29 +146,41 @@ data <- clean_data(captures, surveys, translocations,
                    survival_fill_value = c(treatment = "wild-caught"))
 ```
 
-
 ## Model structure
 
-The `mrmr` package implements a Bayesian open-population Jolly-Seber mark recapture model with known additions to the population (introduced adults).
-The model tracks the states of $M$ individuals that comprise a superpopulation made up of real and pseudo-individuals (see Joseph and Knapp 2018, *Ecosphere* for details).
+The `mrmr2` package implements a Bayesian open-population Jolly-Seber
+mark recapture model with known additions to the population (introduced
+adults). The model tracks the states of $M$ individuals that comprise a
+superpopulation made up of real and pseudo-individuals (see Joseph and
+Knapp 2018, *Ecosphere* for details).
 
-We assume a robust sampling design where the states of individuals are constant within primary periods, which have repeat secondary periods within them (during which observations are made). 
-The possible states of individuals include "not recruited", "alive", and "dead". 
-The possible observations of individuals include "detected" and "not detected". 
-We assume that individuals that are in the "not recruited" or "dead" states are never detected (i.e., there are no mistakes in the individual PIT tag ID records).
+We assume a robust sampling design where the states of individuals are
+constant within primary periods, which have repeat secondary periods
+within them (during which observations are made). The possible states of
+individuals include "not recruited", "alive", and "dead". The possible
+observations of individuals include "detected" and "not detected". We
+assume that individuals that are in the "not recruited" or "dead" states
+are never detected (i.e., there are no mistakes in the individual PIT
+tag ID records).
 
 ## Model fitting
 
-To fit a mark-recapture model, use `mrmr::fit_model()`. 
-This model accounts for known introductions into the population, and has 
-random effects to account for variation in survival and recruitment through time. 
-The example below uses few iterations for speed, but 
-it is a good idea to run 4 chains, and 1000 warmup and 1000 sampling iterations.
+To fit a mark-recapture model, use `mrmr2::fit_model()`. This model
+accounts for known introductions into the population, and has random
+effects to account for variation in survival and recruitment through
+time. The example below uses few iterations for speed, but it is a good
+idea to run 4 chains, and 1000 warmup and 1000 sampling iterations.
 
-To use within-chain parallelization, you must provide the following arguments: 
+To use within-chain parallelization, you must provide the following
+arguments:
 
-- `cpp_options = list(stan_threads = TRUE)` which compiles the model with threading support
-- `threads_per_chain` set to some integer value > 1. I usually try to set this to a value that ensures that all physical cores are being used. For example, on a machine with 8 physical cores, I would run 4 chains, with 2 threads per chain. On a machine with 16 physical cores, you could run 4 chains with 4 threads per chain. 
+- `cpp_options = list(stan_threads = TRUE)` which compiles the model
+  with threading support
+- `threads_per_chain` set to some integer value \> 1. I usually try to
+  set this to a value that ensures that all physical cores are being
+  used. For example, on a machine with 8 physical cores, I would run 4
+  chains, with 2 threads per chain. On a machine with 16 physical cores,
+  you could run 4 chains with 4 threads per chain.
 
 ```{r fit-model, message=FALSE, warning=FALSE, results='hide'}
 mod <- fit_model(
@@ -175,7 +193,8 @@ mod <- fit_model(
 )
 ```
 
-To diagnose potential non-convergence of the MCMC algorithm, inspect traceplots:
+To diagnose potential non-convergence of the MCMC algorithm, inspect
+traceplots:
 
 ```{r plot-traceplots}
 pars_to_plot <- c('alpha_lambda', 
@@ -186,17 +205,77 @@ pars_to_plot <- c('alpha_lambda',
 bayesplot::mcmc_trace(mod$m_fit$draws(pars_to_plot))
 ```
 
-It is also a good idea to look at Rhat estimates to see whether they 
+It is also a good idea to look at Rhat estimates to see whether they
 indicate of a lack of convergence (Rhat values $\geq$ 1.01):
 
 ```{r print-model}
 mod$m_fit$summary(pars_to_plot)
 ```
 
+### Detection random-effect models {#detection-re}
+
+By default (`model = "base"`), detection probability is a purely
+deterministic function of any covariates supplied via `capture_formula`
+to `clean_data()` — with the default `capture_formula = ~ 1`, every
+survey in the dataset shares one scalar detection probability. Survival
+and recruitment, by contrast, already have a random effect that lets
+them vary by primary period. `mrmr2::fit_model()` offers two optional
+extensions, selected with the `model` argument, that add an analogous
+random effect to detection:
+
+- `model = "detect_re"` adds a between-primary-period random effect and
+  a within-primary-period (per-survey) random effect to detection
+  probability. Simulation work found this mainly corrects overconfident
+  (too-narrow) uncertainty intervals on abundance (`N`) and recruitment
+  (`B`) when true detectability drifts across periods or survey
+  occasions — it has little effect on the point estimates themselves.
+- `model = "indiv_re"` adds an individual-level random effect, so that
+  some individuals can be persistently harder to detect than others
+  (e.g., due to body size, behavior, or microhabitat use). Unlike
+  `"detect_re"`, ignoring real individual heterogeneity of this kind
+  causes a genuine *negative bias* in point estimates of `N` —
+  chronically hard-to-detect individuals get undercounted — matching
+  classical closed-population heterogeneity (`M_h`) theory.
+
+```{r fit-model-re, eval=FALSE}
+mod_indiv_re <- fit_model(
+  data = data,
+  model = "indiv_re",
+  parallel_chains = parallel::detectCores(),
+  iter_warmup = 1000,
+  iter_sampling = 1000
+)
+```
+
+These extensions are not free. Both take longer to fit than `"base"`,
+and `"indiv_re"` in particular produces substantially larger saved fits,
+since its random effect has one entry per individual in the augmented
+superpopulation (`M`, typically several times the number of animals ever
+observed) rather than one per primary period or survey. `"detect_re"`'s
+two variance components are only weakly separable, which can trigger
+divergent transitions when one of them is at or near zero; `fit_model()`
+handles this automatically by defaulting `adapt_delta` to `0.95` (rather
+than cmdstanr's usual `0.8`) whenever `model = "detect_re"` and
+`adapt_delta` is left unspecified.
+
+One more caveat when interpreting a `"detect_re"` fit: with only a few
+secondary surveys per primary period, the model can attribute some of
+what is really per-survey (`sigma_detect_occasion`) noise to the
+between-period term (`sigma_detect_period`) instead, purely because a
+small sample of occasion-level draws can look like a period-level shift
+by chance. Before concluding there is genuine period-to-period drift in
+detectability, compare the posterior for `sigma_detect_period` against
+the noise floor it would show even with no real period effect, roughly
+`sigma_detect_occasion / sqrt(J)`, where `J` is the number of secondary
+surveys in a primary period. This labeling ambiguity doesn't bias `N`,
+`B`, `phi`, or `lambda` — those depend only on the sum of the two random
+effects — but it does mean the two `sigma` estimates shouldn't be read
+in isolation.
+
 ## Built-in visualizations
 
-Time series of abundance, recruitment, and survival of introduced cohorts are
-available through the `mrmr::plot_model()` function. 
+Time series of abundance, recruitment, and survival of introduced
+cohorts are available through the `mrmr2::plot_model()` function.
 
 ```{r plot-abundance}
 plot_model(mod, what = 'abundance')
@@ -210,18 +289,25 @@ plot_model(mod, what = 'recruitment')
 plot_model(mod, what = 'survival')
 ```
 
+`what = 'survival'` only pulls posterior draws of the latent state (`s`)
+for translocated individuals, rather than for every individual (real and
+data-augmented pseudo-individual) tracked by the model. On sites with a
+large superpopulation relative to the number of translocated
+individuals, this keeps memory use for this plot far below what it would
+be if the full `s` array were pulled and then filtered down afterward.
+
 ### Translocation survival tables
 
-If individuals have been translocated into sites, you can generate a table of
-estimated survival through time for each cohort (release date) as a function 
-of years since introduction:
+If individuals have been translocated into sites, you can generate a
+table of estimated survival through time for each cohort (release date)
+as a function of years since introduction:
 
 ```{r survival-table}
 survival_table(mod)
 ```
 
-You can also get estimates of survival through time by individual or cohort: 
-
+You can also get estimates of survival through time by individual or
+cohort:
 
 ```{r survival-table-cohort}
 survival_table(mod, by_cohort = TRUE)
@@ -231,12 +317,12 @@ survival_table(mod, by_cohort = TRUE)
 survival_table(mod, by_individual = TRUE)
 ```
 
-
 ## Custom visualizations
 
-Any of the plotting functionality that you would expect from a `stanfit` model
-is available as well, by accessing the `m_fit` list element from a model object. 
-For example, we could assess the posterior for the superpopulation size:
+Any of the plotting functionality that you would expect from a `stanfit`
+model is available as well, by accessing the `m_fit` list element from a
+model object. For example, we could assess the posterior for the
+superpopulation size:
 
 ```{r}
 bayesplot::mcmc_trace(mod$m_fit$draws("Nsuper"))
@@ -244,9 +330,9 @@ bayesplot::mcmc_trace(mod$m_fit$draws("Nsuper"))
 
 ## Cases with no translocations
 
-In some cases, there may not be any introductions of animals into a population. 
-The only difference in implementation in such cases is that the `translocations` 
-argument to `clean_data()` can be omitted:
+In some cases, there may not be any introductions of animals into a
+population. The only difference in implementation in such cases is that
+the `translocations` argument to `clean_data()` can be omitted:
 
 ```{r no-trans, message = FALSE, eval = FALSE}
 data_no_trans <- clean_data(captures, surveys)
@@ -255,29 +341,28 @@ mod_no_trans <- fit_model(data_no_trans)
 
 ## Cases with known removals
 
-When individuals are removed from a population, e.g., for translocation, these
-known removals can be included as data to increase the precision of abundance
-estimates. 
-An example dataset fitting this case is included at an imaginary site
-called "Equid". 
-Note below that we filter out dead animals -- any dead animals encountered on 
-surveys should be in the `removals` data, and not in the `captures` data frame, 
-which should only contain live animals (those that might survive to the next
-primary period).
+When individuals are removed from a population, e.g., for translocation,
+these known removals can be included as data to increase the precision
+of abundance estimates. An example dataset fitting this case is included
+at an imaginary site called "Equid". Note below that we filter out dead
+animals -- any dead animals encountered on surveys should be in the
+`removals` data, and not in the `captures` data frame, which should only
+contain live animals (those that might survive to the next primary
+period).
 
 ```{r removals, message = FALSE, eval = FALSE}
 captures <- system.file("extdata", 
                         "equid-captures.csv", 
-                         package = "mrmr") %>%
+                         package = "mrmr2") %>%
   read_csv %>%
   filter(capture_animal_state != 'dead')
 surveys <- system.file("extdata", 
                        "equid-surveys.csv", 
-                       package = "mrmr") %>%
+                       package = "mrmr2") %>%
   read_csv
 removals <- system.file("extdata", 
                         "equid-removals.csv", 
-                         package = "mrmr") %>%
+                         package = "mrmr2") %>%
   read_csv
 
 d <- clean_data(captures, surveys, removals = removals)

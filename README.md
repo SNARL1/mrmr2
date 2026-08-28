@@ -1,8 +1,12 @@
 
-# mrmr: mark recapture miscellany in R
+# mrmr2: mark recapture miscellany in R, extended
 
-![build
-status](https://github.com/SNARL1/mrmr/workflows/R-CMD-check/badge.svg)
+<figure>
+<img
+src="https://github.com/SNARL1/mrmr2/workflows/R-CMD-check/badge.svg"
+alt="build status" />
+<figcaption aria-hidden="true">build status</figcaption>
+</figure>
 
 This package automates common data processing steps for mark recapture
 data, with an emphasis on data collected by folks at the Sierra Nevada
@@ -12,10 +16,15 @@ collected by the SNARL team, and as a result, this package should not be
 thought of as a general purpose mark-recapture modeling toolbox (for
 that, see the RMark, unmarked, multimark or Rcapture packages).
 
+`mrmr2` extends the original [`mrmr`](https://github.com/SNARL1/mrmr)
+package with two optional detection-heterogeneity random-effect models
+and a lower-memory survival plotting method, and can be installed
+alongside `mrmr` without conflict.
+
 ## Installation
 
 ``` r
-remotes::install_github("SNARL1/mrmr")
+remotes::install_github("SNARL1/mrmr2")
 ```
 
 ## Usage
@@ -25,13 +34,21 @@ This package consists of three core functions to use consecutively:
 1.  `clean_data()` ingests capture-recapture, introduction, and survey
     data.
 2.  `fit_model()` fits a Jolly-Seber mark recapture model to quickly
-    estimate demographic parameters and population abundance.
+    estimate demographic parameters and population abundance. By default
+    this is the same model used by `mrmr`, but the `model` argument can
+    request one of two optional detection random-effect extensions
+    (`"detect_re"` for between-period/occasion detection variation,
+    `"indiv_re"` for individual-level detection heterogeneity) when
+    unmodeled detection variation is a concern.
 3.  `plot_model()` generates plots of abundance and recruitment over
-    time, or of the survival of introduced cohorts.
+    time, or of the survival of introduced cohorts. Its survival plot
+    pulls posterior draws only for the individuals it needs, keeping
+    memory use low even for sites with a large augmented
+    superpopulation.
 
 For an in-depth look at how to use these functions, see the vignette [An
-Introduction to the mrmr
-package](https://snarl1.github.io/mrmr/articles/intro-to-mrmr.html).
+Introduction to
+mrmr2](https://snarl1.github.io/mrmr2/articles/intro-to-mrmr.html).
 
 ## Background
 
