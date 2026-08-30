@@ -50,7 +50,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/intro-to-mrmr.html">An introduction to mrmr2</a>
+      <a href="articles/intro-to-mrmr2.html">An introduction to mrmr2</a>
     </li>
   </ul>
 </li>
@@ -72,7 +72,7 @@
 </h1></div>
 <figure><img src="https://github.com/SNARL1/mrmr2/workflows/R-CMD-check/badge.svg" alt="build status"><figcaption aria-hidden="true">
 build status
-</figcaption></figure><p>This package automates common data processing steps for mark recapture data, with an emphasis on data collected by folks at the Sierra Nevada Aquatic Research Lab (SNARL). Many of the assumptions made in the data processing and modeling are pinned to the type of capture-recapture data collected by the SNARL team, and as a result, this package should not be thought of as a general purpose mark-recapture modeling toolbox (for that, see the RMark, unmarked, multimark or Rcapture packages).</p>
+</figcaption></figure><p>This package automates common data processing steps for mark recapture data, with an emphasis on data collected by researchers in the <a href="https://mountainlakesresearch.com" class="external-link"><code>Mountain Lakes Research Group</code></a> (University of California, Sierra Nevada Aquatic Research Laboratory). Many of the assumptions made in the data processing and modeling are pinned to the type of capture-recapture data collected by the SNARL team, and as a result, this package should not be thought of as a general purpose mark-recapture modeling toolbox (for that, see the RMark, unmarked, multimark or Rcapture packages).</p>
 <p><code>mrmr2</code> extends the original <a href="https://github.com/SNARL1/mrmr" class="external-link"><code>mrmr</code></a> package with two optional detection-heterogeneity random-effect models and a lower-memory survival plotting method, and can be installed alongside <code>mrmr</code> without conflict.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -92,7 +92,7 @@ build status
 <li>
 <code><a href="reference/plot_model.html">plot_model()</a></code> generates plots of abundance and recruitment over time, or of the survival of introduced cohorts. Its survival plot pulls posterior draws only for the individuals it needs, keeping memory use low even for sites with a large augmented superpopulation.</li>
 </ol>
-<p>For an in-depth look at how to use these functions, see the vignette <a href="https://snarl1.github.io/mrmr2/articles/intro-to-mrmr.html" class="external-link">An Introduction to mrmr2</a>.</p>
+<p>For an in-depth look at how to use these functions, see the vignette <a href="https://snarl1.github.io/mrmr2/articles/intro-to-mrmr2.html" class="external-link">An Introduction to mrmr2</a>. Additional details on the new functionality added to mrmr2 is provided in <a href="https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd" class="external-link">An Introduction to CMR Analysis Using the mrmr and mrmr2 Packages</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
@@ -132,7 +132,8 @@ build status
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Max Joseph <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-7745-9990" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>Max Joseph <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0002-7745-9990" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>Roland Knapp <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-1954-2745" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 </ul>
 </div>
 
@@ -144,7 +145,7 @@ build status
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by Max Joseph.</p>
+<p>Developed by Max Joseph, Roland Knapp.</p>
 </div>
 
 <div class="pkgdown">
