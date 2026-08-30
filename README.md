@@ -53,7 +53,7 @@ Introduction to
 mrmr2](https://snarl1.github.io/mrmr2/articles/intro-to-mrmr2.html).
 Additional details on the new functionality added to mrmr2 is provided
 in [An Introduction to CMR Analysis Using the mrmr and mrmr2
-Packages](https://github.com/SNARL1/mrmr-revisited/introdution-tocme-with-mrmr.html).
+Packages](https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd).
 
 ## Background
 
