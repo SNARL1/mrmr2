@@ -204,6 +204,30 @@ assume that individuals that are in the "not recruited" or "dead" states
 are never detected (i.e., there are no mistakes in the individual PIT
 tag ID records).
 
+For reference, the parameters estimated by the model are as follows:
+
+| Parameter | Symbol | Model | Definition |
+|--------------|--------------|--------------|-------------------------------|
+| `alpha_lambda` | $\alpha_\lambda$ | all | Intercept of per-primary-period recruitment probability, on the logit scale |
+| `sigma_lambda` | $\sigma_\lambda$ | all | Standard deviation of the recruitment random effect (`eps_lambda`) across primary periods |
+| `eps_lambda` | $\epsilon_\lambda$ | all | Standardized per-primary-period random effect on recruitment probability |
+| `lambda` | $\lambda$ | all | Probability that an as-yet-unrecruited individual is recruited during a given primary period |
+| `beta_phi` | $\beta_\phi$ | all | Coefficients (intercept and any survival covariates) for survival probability, on the logit scale |
+| `sigma_phi` | $\sigma_\phi$ | all | Standard deviation of the survival random effect (`eps_phi`) across primary periods |
+| `eps_phi` | $\epsilon_\phi$ | all | Per-primary-period random effect on survival probability |
+| `phi` | $\phi$ | all | Probability that an alive individual survives from one primary period to the next |
+| `beta_detect` | $\beta_p$ | all | Coefficients (intercept and any detection covariates) for detection probability, on the logit scale |
+| `sigma_detect_period` | $\sigma_{p,\text{period}}$ | `detect_re` | Standard deviation of the between-primary-period detection random effect (`eps_detect_period`) |
+| `eps_detect_period` | $\epsilon_{p,\text{period}}$ | `detect_re` | Per-primary-period random effect on detection probability, shared by all surveys in that period |
+| `sigma_detect_occasion` | $\sigma_{p,\text{occasion}}$ | `detect_re` | Standard deviation of the within-primary-period (per-survey) detection random effect (`eps_detect_occasion`) |
+| `eps_detect_occasion` | $\epsilon_{p,\text{occasion}}$ | `detect_re` | Per-survey random effect on detection probability, nested within primary period |
+| `sigma_detect_indiv` | $\sigma_{p,\text{indiv}}$ | `indiv_re` | Standard deviation of the individual-level detection random effect (`eps_detect_indiv`) |
+| `eps_detect_indiv` | $\epsilon_{p,\text{indiv}}$ | `indiv_re` | Per-individual random effect on detection probability (individual detection heterogeneity, $M_h$) |
+| `s` | $s$ | all | Latent state of each individual (not yet recruited, alive, or dead) in each primary period |
+| `N` | $N$ | all | Estimated population size (number of "alive" individuals) in each primary period |
+| `B` | $B$ | all | Estimated number of newly recruited individuals in each primary period |
+| `Nsuper` | $N_{super}$ | all | Estimated superpopulation size: the total number of individuals ever alive during the study |
+
 ## Model fitting
 
 To fit a mark-recapture model, use `mrmr2::fit_model()`. This model
@@ -213,7 +237,7 @@ time. It is also possible to add random effects to account for
 [variation in detection](#detection-re) at the period, occasion, and
 individual level.
 
-The default number of chains is 4. Generally at least 1000 warmup and
+The default number of chains is 4. Generally, at least 1000 warmup and
 1000 sampling iterations should be used; the example model below uses
 only 10 iterations of each to ensure a short run time.
 
@@ -226,20 +250,22 @@ mod <- fit_model(
 )
 ```
 
-To use within-chain parallelization, provide the following additional
-arguments:
+To reduce `mrmr2::fit_model()` run times, use within-chain
+parallelization by providing the following additional arguments:
 
 - `cpp_options = list(stan_threads = TRUE)` which compiles the model
-  with threading support
-- `threads_per_chain` set to some integer value \> 1. To allow the run
-  to finish as quickly as possible, set this to a value that ensures
-  that all physical cores are being used. The number of parallel_chains
-  × threads_per_chain must equal the number of physical cores available.
-  For example, on a machine with 8 physical cores, specify 4 chains, 4
-  parallel chains, and 2 threads per chain. On a machine with 16
-  physical cores, specify 4 chains, 4 parallel chains, and 4 threads per
-  chain. In the following code chunk, threads per chain is set
-  automatically.
+  with threading support.
+- `parallel_chains` specifies the number of chains to run in parallel,
+  and must be $\le$ the number of chains.
+- `threads_per_chain` set to some integer value \> 1. To minimize run
+  times, set this to a value that ensures that all physical cores are
+  being used. The number of parallel_chains × threads_per_chain must
+  equal the number of physical cores available. For example, on a
+  machine with 8 physical cores, specify 4 chains, 4 parallel chains,
+  and 2 threads per chain. On a machine with 16 physical cores, specify
+  4 chains, 4 parallel chains, and 4 threads per chain. In the following
+  code chunk, threads per chain is set automatically based on the number
+  of cores available.
 
 ```{r fit-model-threaded, message=FALSE, warning=FALSE, eval=FALSE}
 mod <- fit_model(
@@ -276,7 +302,7 @@ mod$m_fit$summary(pars_to_plot)
 
 By default (`model = "base"`), detection probability is a purely
 deterministic function of any covariates supplied via `capture_formula`
-to `clean_data()` — with the default `capture_formula = ~ 1`, every
+to `clean_data()`. With the default `capture_formula = ~ 1`, every
 survey in the dataset shares one scalar detection probability. Survival
 and recruitment, by contrast, already have a random effect that lets
 them vary by primary period. `mrmr2::fit_model()` offers two optional
@@ -289,8 +315,8 @@ random effect to detection:
   (too-narrow) uncertainty intervals on abundance (`N`) and recruitment
   (`B`) when true detectability drifts across periods or survey
   occasions — it has little effect on the point estimates themselves.
-- `model = "indiv_re"` adds an individual-level random effect, so that
-  some individuals can be persistently harder to detect than others
+- `model = "indiv_re"` adds an individual-level random effect to account
+  for some individuals being persistently harder to detect than others
   (e.g., due to body size, behavior, or microhabitat use). Unlike
   `"detect_re"`, ignoring real individual heterogeneity of this kind
   causes a genuine *negative bias* in point estimates of `N` —
@@ -302,6 +328,8 @@ mod_indiv_re <- fit_model(
   data = data,
   model = "indiv_re",
   parallel_chains = parallel::detectCores(),
+  threads_per_chain = max(1, parallel::detectCores() %/% 4), 
+  cpp_options = list(stan_threads = TRUE),
   iter_warmup = 1000,
   iter_sampling = 1000
 )
@@ -323,14 +351,14 @@ secondary surveys per primary period, the model can attribute some of
 what is really per-survey (`sigma_detect_occasion`) noise to the
 between-period term (`sigma_detect_period`) instead, purely because a
 small sample of occasion-level draws can look like a period-level shift
-by chance. Before concluding there is genuine period-to-period drift in
-detectability, compare the posterior for `sigma_detect_period` against
-the noise floor it would show even with no real period effect, roughly
-`sigma_detect_occasion / sqrt(J)`, where `J` is the number of secondary
-surveys in a primary period. This labeling ambiguity doesn't bias `N`,
-`B`, `phi`, or `lambda` — those depend only on the sum of the two random
-effects — but it does mean the two `sigma` estimates shouldn't be read
-in isolation.
+by chance. Before concluding there is genuine period-to-period variation
+in detectability, compare the posterior for `sigma_detect_period`
+against the noise floor it would show even with no real period effect,
+roughly `sigma_detect_occasion / sqrt(J)`, where `J` is the number of
+secondary surveys in a primary period. This between-period versus
+survey-level ambiguity doesn't bias `N`, `B`, `phi`, or `lambda` — those
+depend only on the sum of the two random effects — but it does mean the
+two `sigma` estimates shouldn't be read in isolation.
 
 ## Built-in visualizations
 
