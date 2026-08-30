@@ -5,9 +5,10 @@
 \title{Load a mark-recapture data set}
 \usage{
 clean_data(
+  ...,
   captures,
   surveys,
-  translocations = NA,
+  additions = NA,
   removals = NA,
   capture_formula = ~1,
   survival_formula = ~1,
@@ -15,6 +16,10 @@ clean_data(
 )
 }
 \arguments{
+\item{...}{Not used. Present only to force all other arguments to be
+passed by name; passing any argument positionally, or with an
+unrecognized name, raises an error.}
+
 \item{captures}{Data frame containing capture-recapture data. Necessary
 columns include `pit_tag_id` and `survey_date`.}
 
@@ -24,10 +29,11 @@ for which individuals are added or removed from a population should be set
 to zero, and must occur on their own primary period (because of the
 assumption that individuals cannot change states within primary periods).}
 
-\item{translocations}{Optional data frame with translocation data. Necessary
-columns include `pit_tag_id` and `release_date`. If nothing is provided
-to this argument, the `clean_data` function assumes that there are no
-translocations of individuals into the population.}
+\item{additions}{Optional data frame with data on individuals added to the
+population via translocation or reintroduction. Necessary columns include
+`pit_tag_id` and `release_date`. If nothing is provided to this argument,
+the `clean_data` function assumes that there are no such additions to the
+population.}
 
 \item{removals}{Optional data frame with removal data. Necessary columns
 include `pit_tag_id` and `removal_date`. If nothing provided, `clean_data`
@@ -45,8 +51,8 @@ deviation = 1).}
 
 \item{survival_formula}{An optional formula specifying the structure of
 individual-level survival covariates. Any variables in this formula
-must be columns in the `captures` data.frame, and if there are translocations,
-these variables must also exist as columns in the `translocations` data.frame.
+must be columns in the `captures` data.frame, and if there are additions,
+these variables must also exist as columns in the `additions` data.frame.
 The formula must start with `~` and can be provided unquoted.
 It is advisable to ensure that any continuous covariates provided in this
 formula are appropriately scaled (ideally, with mean = 0, and standard
@@ -59,13 +65,14 @@ covariates. This argument is only required when using the
 }
 \value{
 A list containing the data frames resulting from the capture,
-translocation, and survey data, along with a list of data formatted for
+addition, and survey data, along with a list of data formatted for
 use in a mark recapture model (with name 'stan_d').
 }
 \description{
 This function loads and parses a mark recapture data set. It assumes that
-three files are available, specifying capture, survey, and (optional)
-translocation data.
+two files are required, specifying capture and survey data, and two files
+are optional, specifying additions (translocations or reintroductions) and
+removals.
 }
 \examples{
 library(mrmr2)
@@ -74,20 +81,22 @@ library(readr)
 captures <- system.file('extdata', 'capture-example.csv',
     package = 'mrmr2') |>
   read_csv()
-translocations <- system.file('extdata', 'translocation-example.csv',
+additions <- system.file('extdata', 'translocation-example.csv',
     package = 'mrmr2') |>
   read_csv()
 surveys <- system.file('extdata', 'survey-example.csv', package = 'mrmr2') |>
   read_csv()
 
 # read and clean the data using defaults
-data <- clean_data(captures, surveys, translocations)
+data <- clean_data(captures = captures, surveys = surveys,
+                   additions = additions)
 
 
 \dontrun{
 # (optional) specify a formula for detection probabilities, assuming
 there is a column called "person_hours"
-data <- clean_data(captures, surveys, translocations,
+data <- clean_data(captures = captures, surveys = surveys,
+                   additions = additions,
                    capture_formula = ~ person_hours)
 }
 }

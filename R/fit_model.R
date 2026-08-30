@@ -55,12 +55,13 @@
 #' \dontrun{
 #' captures <- system.file("extdata", "capture-example.csv", package = "mrmr2") |>
 #'   readr::read_csv()
-#' translocations <- system.file("extdata", "translocation-example.csv",
-#'                               package = "mrmr2") |>
+#' additions <- system.file("extdata", "translocation-example.csv",
+#'                          package = "mrmr2") |>
 #'   readr::read_csv()
 #' surveys <- system.file("extdata", "survey-example.csv", package = "mrmr2") |>
 #'   readr::read_csv()
-#' out <- clean_data(captures, surveys, translocations)
+#' out <- clean_data(captures = captures, surveys = surveys,
+#'                   additions = additions)
 #'
 #' # fit a model with 4 chains, 2 threads per chain (to use 8 physical cores)
 #' fit_model(

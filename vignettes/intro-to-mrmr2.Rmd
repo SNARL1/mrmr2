@@ -40,10 +40,13 @@ The typical workflow involves three steps:
 ## Data specifications
 
 The package comes with example data that illustrate the expected format.
-Three files are needed. These files are typically named something like
-`capture`, `translocation`, and `survey`, but the files are specified in
-the [data processing step](#data-process) and any names are acceptable.
+Two files are required (describing captures and surveys) and two files
+are optional (describing additions and removals). These files are
+specified in the [data processing step](#data-process) and typically
+named something like `capture`,`survey`, `translocation`, and `removal`,
+but any names are acceptable.
 
+In the following example, we include three of the four possible files.
 The first file specifies capture data:
 
 ```{r setup}
@@ -75,26 +78,7 @@ package). The capture file must contain, at a minimum, `pit_tag_id` and
 (e.g., [survival covariates](#survival-covar)). Each row in this file
 represents a capture or recapture event.
 
-The second file specifies translocation/reintroduction data, and at a
-minimum it must contain `release_date` and `pit_tag_id` columns:
-
-```{r show-trans-data}
-translocation <- read_csv(
-  system.file(
-    "extdata", 
-    "translocation-example.csv", 
-    package = "mrmr2"
-  )
-)
-
-glimpse(translocation)
-```
-
-Each row corresponds to a translocation event of one unique individual.
-Because some mark-recapture datasets do not include translocation or
-reintroduction actions, this file is optional.
-
-The third file specifies survey-level data, and at a minimum it must
+The second file specifies survey-level data, and at a minimum it must
 contain `survey_date`, `primary_period`, and `secondary_period columns`:
 
 ```{r show-survey-data}
@@ -119,13 +103,45 @@ during a primary period. Therefore, the `survey_date` for
 translocation/reintroduction records cannot overlap with the
 `survey_date` range of any primary period.
 
+The third file (optional) specifies translocation (or reintroduction)
+data, and at a minimum it must contain `release_date` and `pit_tag_id`
+columns:
+
+```{r show-trans-data}
+translocation <- read_csv(
+  system.file(
+    "extdata", 
+    "translocation-example.csv", 
+    package = "mrmr2"
+  )
+)
+
+glimpse(translocation)
+```
+
+Each row corresponds to a translocation event of one unique individual.
+Because some mark-recapture datasets do not include translocations or
+reintroductions, this file is optional.
+
+The fourth file (optional), specifying removals, is described in the
+[Cases with known removals](#removals) section.
+
 ## Data processing {#data-process}
 
-To load and process the data, provide paths to the data files as
-arguments to the `mrmr2::clean_data()` function:
+To load and process the data, provide the data frames as named arguments
+to the `mrmr2::clean_data()` function: `captures`, `surveys`, `additions`
+(translocations or reintroductions, optional), and `removals` (optional).
+Note that these are the names `clean_data()` requires for its arguments
+-- they need not match the names you gave your own data frames, as in
+the example below, where the data frame `translocation` (a name we chose
+when reading in the file above) is passed as `clean_data()`'s `additions`
+argument. `clean_data()` determines the role of each input solely from
+these argument names, and will raise an error if any argument is passed
+positionally instead of by name:
 
 ```{r clean-data, message=FALSE}
-data <- clean_data(capture, survey, translocation)
+data <- clean_data(captures = capture, surveys = survey,
+                   additions = translocation)
 ```
 
 This function performs several data-preparation steps. It checks the
@@ -144,6 +160,47 @@ and survival covariate design matrices from the `capture_formula` and
 output provides data frames as list elements, and a list element called
 `stan_d`, which contains data that has been pre-processed for model
 fitting.
+
+### Cases without translocations or reintroductions
+
+In some cases, there may be no introductions of individuals into a
+population. The only difference in implementation in such cases is that
+the `additions` argument to `clean_data()` can be omitted:
+
+```{r no-trans, message = FALSE, eval = FALSE}
+data_no_trans <- clean_data(captures = capture, surveys = survey)
+mod_no_trans <- fit_model(data_no_trans)
+```
+
+### Cases with known removals {#removals}
+
+Know removals of individuals from a population can be included as data
+to increase the precision of abundance estimates. Removals can include
+individuals collected for translocation to another site, or
+previously-tagged individuals that are found dead during a survey. An
+example dataset fitting this case is included for an imaginary site
+called "Equid". In the code chunk below, we first filter out dead
+animals from the capture history -- the `capture` data frame should only
+contain live animals (those that might survive to the next primary
+period), and include them via a `removal` data frame.
+
+```{r removals, message = FALSE, eval = FALSE}
+capture <- read_csv(system.file("extdata", 
+                        "equid-captures.csv", 
+                         package = "mrmr2")) |>
+filter(capture_animal_state != 'dead')
+
+survey <- read_csv(system.file("extdata", 
+                       "equid-surveys.csv", 
+                       package = "mrmr2"))
+
+removal <- read_csv(system.file("extdata",
+                        "equid-removals.csv",
+                         package = "mrmr2"))
+
+d <- clean_data(captures = capture, surveys = survey, removals = removal)
+m <- fit_model(d, parallel_chains = 4, chains = 4)
+```
 
 ### Including detection/non-detection covariates
 
@@ -165,7 +222,8 @@ captures <- captures |>
   mutate(c_person_hours = c(scale(person_hours)))
 
 # specify the formula
-data <- clean_data(captures, surveys, translocations,
+data <- clean_data(captures = captures, surveys = surveys,
+                   additions = translocations,
                    capture_formula = ~ c_person_hours)
 ```
 
@@ -182,8 +240,9 @@ value (e.g., "treated" or "control", depending on the experiment):
 
 ```{r survival-covariate, message=FALSE, eval=FALSE}
 # specify the formula
-data <- clean_data(captures, surveys, translocations,
-                   survival_formula = ~ treatment, 
+data <- clean_data(captures = captures, surveys = surveys,
+                   additions = translocations,
+                   survival_formula = ~ treatment,
                    survival_fill_value = c(treatment = "treated"))
 ```
 
@@ -207,7 +266,7 @@ tag ID records).
 For reference, the parameters estimated by the model are as follows:
 
 | Parameter | Symbol | Model | Definition |
-|--------------|--------------|--------------|-------------------------------|
+|-----------------|-----------------|-----------------|----------------------|
 | `alpha_lambda` | $\alpha_\lambda$ | all | Intercept of per-primary-period recruitment probability, on the logit scale |
 | `sigma_lambda` | $\sigma_\lambda$ | all | Standard deviation of the recruitment random effect (`eps_lambda`) across primary periods |
 | `eps_lambda` | $\epsilon_\lambda$ | all | Standardized per-primary-period random effect on recruitment probability |
@@ -379,16 +438,31 @@ plot_model(mod, what = 'survival')
 
 `what = 'survival'` only pulls posterior draws of the latent state (`s`)
 for translocated individuals, rather than for every individual (real and
-data-augmented pseudo-individual) tracked by the model. On sites with a
-large superpopulation relative to the number of translocated
-individuals, this keeps memory use for this plot far below what it would
-be if the full `s` array were pulled and then filtered down afterward.
+data-augmented pseudo-individual) tracked by the model (behavior of
+`what = 'survival'` in `mrmr`). On sites with a large superpopulation
+relative to the number of translocated individuals, this keeps memory
+use for this plot far below what it would be if the full `s` array were
+pulled and then filtered down afterward.
 
-### Translocation survival tables
+## Custom visualizations
 
-If individuals have been translocated into sites, you can generate a
-table of estimated survival through time for each cohort (release date)
-as a function of years since introduction:
+Any of the plotting functionality that you would expect from a `stanfit`
+model is available as well, by accessing the `m_fit` list element from a
+model object. For example, we could assess the posterior for the
+superpopulation size:
+
+```{r}
+bayesplot::mcmc_trace(mod$m_fit$draws("Nsuper"))
+```
+
+See [Model structure](#model-structure) for parameter names and
+definitions.
+
+## Translocation/reintroduction survival tables
+
+If individuals were added to sites, you can generate a table of
+estimated survival through time for each cohort (release date) as a
+function of years since introduction:
 
 ```{r survival-table}
 survival_table(mod)
@@ -403,56 +477,4 @@ survival_table(mod, by_cohort = TRUE)
 
 ```{r survival-table-ind}
 survival_table(mod, by_individual = TRUE)
-```
-
-## Custom visualizations
-
-Any of the plotting functionality that you would expect from a `stanfit`
-model is available as well, by accessing the `m_fit` list element from a
-model object. For example, we could assess the posterior for the
-superpopulation size:
-
-```{r}
-bayesplot::mcmc_trace(mod$m_fit$draws("Nsuper"))
-```
-
-## Cases with no translocations
-
-In some cases, there may not be any introductions of animals into a
-population. The only difference in implementation in such cases is that
-the `translocations` argument to `clean_data()` can be omitted:
-
-```{r no-trans, message = FALSE, eval = FALSE}
-data_no_trans <- clean_data(captures, surveys)
-mod_no_trans <- fit_model(data_no_trans)
-```
-
-## Cases with known removals
-
-When individuals are removed from a population, e.g., for translocation,
-these known removals can be included as data to increase the precision
-of abundance estimates. An example dataset fitting this case is included
-at an imaginary site called "Equid". Note below that we filter out dead
-animals -- any dead animals encountered on surveys should be in the
-`removals` data, and not in the `captures` data frame, which should only
-contain live animals (those that might survive to the next primary
-period).
-
-```{r removals, message = FALSE, eval = FALSE}
-captures <- system.file("extdata", 
-                        "equid-captures.csv", 
-                         package = "mrmr2") |>
-  read_csv |>
-  filter(capture_animal_state != 'dead')
-surveys <- system.file("extdata", 
-                       "equid-surveys.csv", 
-                       package = "mrmr2") |>
-  read_csv
-removals <- system.file("extdata", 
-                        "equid-removals.csv", 
-                         package = "mrmr2") |>
-  read_csv
-
-d <- clean_data(captures, surveys, removals = removals)
-m <- fit_model(d, parallel_chains = 2, chains = 2)
 ```

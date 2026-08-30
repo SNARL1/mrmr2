@@ -12,10 +12,11 @@
 #' @examples
 #' \dontrun{
 #' captures <- system.file("extdata", "capture-example.csv", package = "mrmr2")
-#' translocations <- system.file("extdata", "translocation-example.csv",
-#'                               package = "mrmr2")
+#' additions <- system.file("extdata", "translocation-example.csv",
+#'                          package = "mrmr2")
 #' surveys <- system.file("extdata", "survey-example.csv", package = "mrmr2")
-#' out <- clean_data(captures, translocations, surveys)
+#' out <- clean_data(captures = captures, surveys = surveys,
+#'                   additions = additions)
 #' model <- fit_model(out, chains = 1, iter = 10)
 #' plot_model(model, what = "abundance")
 #' }
@@ -33,13 +34,13 @@
 plot_model <- function(model, what) {
   valid_plots <- c("abundance", "recruitment", "survival")
   stopifnot(what %in% valid_plots)
-  any_translocations <- 'data.frame' %in% class(model$data$translocations)
+  any_additions <- 'data.frame' %in% class(model$data$additions)
 
   if (what == "survival") {
-    if (!any_translocations) {
-      stop(paste("No translocation data are present, so a cohort survival",
-                 "plot cannot be generated. Using what='survival' requires",
-                 "translocation data."))
+    if (!any_additions) {
+      stop(paste("No addition data (translocations or reintroductions) are",
+                 "present, so a cohort survival plot cannot be generated.",
+                 "Using what='survival' requires addition data."))
     }
 
     primary_period_dates <- model$data$surveys |>
@@ -47,8 +48,8 @@ plot_model <- function(model, what) {
       summarize(date = min(.data$survey_date),
                 year = min(.data$year))
 
-    transloc_dates <- distinct(
-      model$data$translocations,
+    addition_dates <- distinct(
+      model$data$additions,
       .data$pit_tag_id,
       .data$release_date
     )
@@ -60,12 +61,12 @@ plot_model <- function(model, what) {
     # array, which can otherwise dominate this function's memory use.
     pit_tag_ids <- dimnames(model$data$stan_d$Y)[[1]]
     n_periods <- ncol(model$data$stan_d$Y)
-    transloc_idx <- which(
-      pit_tag_ids %in% as.character(model$data$translocations$pit_tag_id)
+    addition_idx <- which(
+      pit_tag_ids %in% as.character(model$data$additions$pit_tag_id)
     )
     s_varnames <- paste0(
-      "s[", rep(transloc_idx, each = n_periods), ",",
-      rep(seq_len(n_periods), times = length(transloc_idx)), "]"
+      "s[", rep(addition_idx, each = n_periods), ",",
+      rep(seq_len(n_periods), times = length(addition_idx)), "]"
     )
 
     p <- model$m_fit$draws(variables = s_varnames, format = "draws_df") |>
@@ -76,7 +77,7 @@ plot_model <- function(model, what) {
         primary_period = .data$index_2
       ) |>
       mutate(pit_tag_id = pit_tag_ids[.data$index_1]) |>
-      left_join(transloc_dates, by = "pit_tag_id") |>
+      left_join(addition_dates, by = "pit_tag_id") |>
       group_by(.data$release_date, .data$primary_period, .data$.draw) |>
       summarize(fraction_alive = mean(.data$value == 2), .groups = "drop") |>
       filter(.data$primary_period > 1) |>
@@ -156,19 +157,19 @@ plot_model <- function(model, what) {
         theme(axis.text.x = element_text(angle = 90))
     }
 
-    if (any_translocations) {
-      transloc_sums <- model$data$translocations |>
+    if (any_additions) {
+      addition_sums <- model$data$additions |>
         group_by(.data$release_date) |>
         summarize(n = length(unique(.data$pit_tag_id))) |>
         mutate(year = lubridate::year(.data$release_date))
       p <- p +
         geom_vline(aes(xintercept = .data$release_date),
                    linetype = "dashed",
-                   data = transloc_sums) +
+                   data = addition_sums) +
         geom_text(aes(x = .data$release_date,
                       y = -Inf,
                       label = paste0(" +", .data$n)),
-                  data = transloc_sums,
+                  data = addition_sums,
                   vjust = -1,
                   hjust = 0)
     }

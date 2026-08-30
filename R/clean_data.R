@@ -1,9 +1,13 @@
 #' Load a mark-recapture data set
 #'
 #' This function loads and parses a mark recapture data set. It assumes that
-#' three files are available, specifying capture, survey, and (optional)
-#' translocation data.
+#' two files are required, specifying capture and survey data, and two files
+#' are optional, specifying additions (translocations or reintroductions) and
+#' removals.
 #'
+#' @param ... Not used. Present only to force all other arguments to be
+#' passed by name; passing any argument positionally, or with an
+#' unrecognized name, raises an error.
 #' @param captures Data frame containing capture-recapture data. Necessary
 #' columns include `pit_tag_id` and `survey_date`.
 #' @param surveys Data frame containing survey data. Necessary columns include
@@ -11,10 +15,11 @@
 #' for which individuals are added or removed from a population should be set
 #' to zero, and must occur on their own primary period (because of the
 #' assumption that individuals cannot change states within primary periods).
-#' @param translocations Optional data frame with translocation data. Necessary
-#' columns include `pit_tag_id` and `release_date`. If nothing is provided
-#' to this argument, the `clean_data` function assumes that there are no
-#' translocations of individuals into the population.
+#' @param additions Optional data frame with data on individuals added to the
+#' population via translocation or reintroduction. Necessary columns include
+#' `pit_tag_id` and `release_date`. If nothing is provided to this argument,
+#' the `clean_data` function assumes that there are no such additions to the
+#' population.
 #' @param removals Optional data frame with removal data. Necessary columns
 #' include `pit_tag_id` and `removal_date`. If nothing provided, `clean_data`
 #' assumes there are no removals from the population. This can be used to
@@ -29,8 +34,8 @@
 #' deviation = 1).
 #' @param survival_formula An optional formula specifying the structure of
 #' individual-level survival covariates. Any variables in this formula
-#' must be columns in the `captures` data.frame, and if there are translocations,
-#' these variables must also exist as columns in the `translocations` data.frame.
+#' must be columns in the `captures` data.frame, and if there are additions,
+#' these variables must also exist as columns in the `additions` data.frame.
 #' The formula must start with `~` and can be provided unquoted.
 #' It is advisable to ensure that any continuous covariates provided in this
 #' formula are appropriately scaled (ideally, with mean = 0, and standard
@@ -40,7 +45,7 @@
 #' covariates. This argument is only required when using the
 #' `survival_formula` argument`.
 #' @return A list containing the data frames resulting from the capture,
-#' translocation, and survey data, along with a list of data formatted for
+#' addition, and survey data, along with a list of data formatted for
 #' use in a mark recapture model (with name 'stan_d').
 #' @examples
 #' library(mrmr2)
@@ -49,20 +54,22 @@
 #' captures <- system.file('extdata', 'capture-example.csv',
 #'     package = 'mrmr2') |>
 #'   read_csv()
-#' translocations <- system.file('extdata', 'translocation-example.csv',
+#' additions <- system.file('extdata', 'translocation-example.csv',
 #'     package = 'mrmr2') |>
 #'   read_csv()
 #' surveys <- system.file('extdata', 'survey-example.csv', package = 'mrmr2') |>
 #'   read_csv()
 #'
 #' # read and clean the data using defaults
-#' data <- clean_data(captures, surveys, translocations)
+#' data <- clean_data(captures = captures, surveys = surveys,
+#'                    additions = additions)
 #'
 #'
 #'\dontrun{
 #' # (optional) specify a formula for detection probabilities, assuming
 #' there is a column called "person_hours"
-#' data <- clean_data(captures, surveys, translocations,
+#' data <- clean_data(captures = captures, surveys = surveys,
+#'                    additions = additions,
 #'                    capture_formula = ~ person_hours)
 #'}
 #' @export
@@ -77,14 +84,35 @@
 #' @importFrom stats model.matrix
 #' @importFrom stats na.omit
 
-clean_data <- function(captures, surveys,
-                       translocations = NA,
+clean_data <- function(...,
+                       captures,
+                       surveys,
+                       additions = NA,
                        removals = NA,
                        capture_formula = ~ 1,
                        survival_formula = ~ 1,
                        survival_fill_value = NA) {
 
-  any_translocations <- 'data.frame' %in% class(translocations)
+  dots <- list(...)
+  if (length(dots) > 0) {
+    dot_names <- names(dots)
+    if (is.null(dot_names) || any(dot_names == "")) {
+      stop(paste("All arguments to clean_data() must be passed by name,",
+                 "e.g., clean_data(captures = ..., surveys = ...,",
+                 "additions = ..., removals = ...). Positional arguments",
+                 "are not allowed, so the role of each input (captures,",
+                 "surveys, additions, or removals) is always determined",
+                 "by its argument name, not its position."))
+    } else {
+      stop(paste0("Unrecognized argument(s) to clean_data(): ",
+                  paste(dot_names, collapse = ", "),
+                  ". Valid argument names are: captures, surveys,",
+                  " additions, removals, capture_formula,",
+                  " survival_formula, survival_fill_value."))
+    }
+  }
+
+  any_additions <- 'data.frame' %in% class(additions)
   any_removals <- 'data.frame' %in% class(removals)
 
   survival_formula_specified <- !identical(survival_formula, ~1)
@@ -102,10 +130,10 @@ clean_data <- function(captures, surveys,
     }
     for (n in names(survival_fill_value)) {
       name_in_captures <- n %in% names(captures)
-      name_in_translocations <- any_translocations & n %in% names(translocations)
-      if (!name_in_captures & !name_in_translocations) {
+      name_in_additions <- any_additions & n %in% names(additions)
+      if (!name_in_captures & !name_in_additions) {
         stop(paste("Named elements in the survival_fill_value argument",
-                   "must also be columns in the capture and/or translocation",
+                   "must also be columns in the capture and/or addition",
                    "data, but", n, "was not found in either."))
       }
     }
@@ -165,15 +193,15 @@ clean_data <- function(captures, surveys,
 
 
 
-  if (any_translocations) {
-    translocations$release_date <- parse_as_date(translocations$release_date)
-    translocations <- translocations |>
+  if (any_additions) {
+    additions$release_date <- parse_as_date(additions$release_date)
+    additions <- additions |>
       mutate(pit_tag_id = as.character(.data$pit_tag_id),
              survey_date = as.Date(.data$release_date)) |>
       left_join(filter(surveys, .data$secondary_period == 0))
-    transloc_tags <- translocations$pit_tag_id
+    addition_tags <- additions$pit_tag_id
   } else {
-    transloc_tags <- c()
+    addition_tags <- c()
   }
 
   if (any_removals) {
@@ -196,7 +224,7 @@ clean_data <- function(captures, surveys,
 
 
   # find M, the superpopulation size
-  n_obs <- length(unique(c(transloc_tags, captures$pit_tag_id)))
+  n_obs <- length(unique(c(addition_tags, captures$pit_tag_id)))
   n_aug <- n_obs * 2
   M <- n_obs + n_aug
 
@@ -207,8 +235,8 @@ clean_data <- function(captures, surveys,
     select("n_sec_periods") |>
     unlist()
 
-  ever_detected <- transloc_tags %in% captures$pit_tag_id
-  introduced_but_never_detected <- transloc_tags[!ever_detected]
+  ever_detected <- addition_tags %in% captures$pit_tag_id
+  introduced_but_never_detected <- addition_tags[!ever_detected]
 
   y_aug <- tibble(pit_tag_id = c(introduced_but_never_detected,
                                  paste0('aug', 1:n_aug)),
@@ -297,10 +325,10 @@ clean_data <- function(captures, surveys,
         dplyr::filter_at(survival_covariate_columns, not_na)
     }
 
-    if (any_translocations) {
-      # read in covariate data from translocations
+    if (any_additions) {
+      # read in covariate data from additions
       survival_covariate_df <- survival_covariate_df |>
-        dplyr::full_join(dplyr::distinct(translocations[, join_cols])) |>
+        dplyr::full_join(dplyr::distinct(additions[, join_cols])) |>
         dplyr::filter_at(survival_covariate_columns, not_na)
     }
     stopifnot(all(survival_covariate_columns %in% names(survival_covariate_df)))
@@ -353,15 +381,15 @@ clean_data <- function(captures, surveys,
 
 
   # Process data for introductions ------------------------------------------
-  n_intro <- length(unique(transloc_tags))
-  stopifnot(all(transloc_tags %in% dimnames(Y)[[1]]))
-  introduced <- dimnames(Y)[[1]] %in% transloc_tags
+  n_intro <- length(unique(addition_tags))
+  stopifnot(all(addition_tags %in% dimnames(Y)[[1]]))
+  introduced <- dimnames(Y)[[1]] %in% addition_tags
   t_intro <- rep(0, M) # primary period index when the animal was introduced
   # 0 acts as an NA value
   for (i in 1:M) {
     if (introduced[i]) {
-      translocate_df_row <- which(transloc_tags == dimnames(Y)[[1]][i])
-      t_intro[i] <- translocations$primary_period[translocate_df_row]
+      addition_df_row <- which(addition_tags == dimnames(Y)[[1]][i])
+      t_intro[i] <- additions$primary_period[addition_df_row]
     }
   }
   stopifnot(mean(t_intro > 0) == mean(introduced))
@@ -422,11 +450,11 @@ clean_data <- function(captures, surveys,
 
   # Check whether there is any natural (non-translocation) recruitment
   any_recruitment <- TRUE
-  if (any_translocations) {
-    if (all(captures$pit_tag_id %in% translocations$pit_tag_id)) {
+  if (any_additions) {
+    if (all(captures$pit_tag_id %in% additions$pit_tag_id)) {
       any_recruitment <- FALSE
       warning(paste("All captured individuals appear to have been introduced",
-                    "(that is, they are in the translocation data).",
+                    "(that is, they are in the addition data).",
                     "For computational reasons, the model will not include",
                     "a natural recruitment component. If this is consistent",
                     "with your understanding, proceed without concern. But",
@@ -457,7 +485,7 @@ clean_data <- function(captures, surveys,
 
   list(stan_d = stan_d,
        captures = captures,
-       translocations = translocations,
+       additions = additions,
        surveys = surveys,
        removals = removals,
        survival_covariate_df = survival_covariate_df)

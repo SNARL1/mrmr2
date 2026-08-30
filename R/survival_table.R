@@ -18,10 +18,11 @@
 #' @examples
 #' \dontrun{
 #' captures <- system.file("extdata", "capture-example.csv", package = "mrmr2")
-#' translocations <- system.file("extdata", "translocation-example.csv",
-#'                               package = "mrmr2")
+#' additions <- system.file("extdata", "translocation-example.csv",
+#'                          package = "mrmr2")
 #' surveys <- system.file("extdata", "survey-example.csv", package = "mrmr2")
-#' out <- clean_data(captures, translocations, surveys)
+#' out <- clean_data(captures = captures, surveys = surveys,
+#'                   additions = additions)
 #' model <- fit_model(out, chains = 1, iter = 10)
 #' survival_table(model)
 #' }
@@ -36,11 +37,11 @@ survival_table <- function(
   model, by_cohort = TRUE, by_individual = FALSE, thin = 1
 ) {
 
-  any_translocations <- 'data.frame' %in% class(model$data$translocations)
+  any_additions <- 'data.frame' %in% class(model$data$additions)
 
-  if (!any_translocations) {
-    stop(paste("No translocation data are present, so a cohort survival",
-               "table cannot be created."))
+  if (!any_additions) {
+    stop(paste("No addition data (translocations or reintroductions) are",
+               "present, so a cohort survival table cannot be created."))
   }
 
    primary_period_dates <- model$data$surveys |>
@@ -58,8 +59,8 @@ survival_table <- function(
       primary_period = .data$index_2,
       pit_tag_id = dimnames(model$data$stan_d$Y)[[1]][.data$index_1]
     ) |>
-    filter(.data$pit_tag_id %in% as.character(model$data$translocations$pit_tag_id)) |>
-    left_join(distinct(model$data$translocations,
+    filter(.data$pit_tag_id %in% as.character(model$data$additions$pit_tag_id)) |>
+    left_join(distinct(model$data$additions,
                        .data$pit_tag_id, .data$release_date)) |>
     left_join(primary_period_dates) |>
     filter(.data$date > .data$release_date) |>

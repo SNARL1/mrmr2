@@ -32,10 +32,11 @@ a variable number of primary periods per year.
 \examples{
 \dontrun{
 captures <- system.file("extdata", "capture-example.csv", package = "mrmr2")
-translocations <- system.file("extdata", "translocation-example.csv",
-                              package = "mrmr2")
+additions <- system.file("extdata", "translocation-example.csv",
+                         package = "mrmr2")
 surveys <- system.file("extdata", "survey-example.csv", package = "mrmr2")
-out <- clean_data(captures, translocations, surveys)
+out <- clean_data(captures = captures, surveys = surveys,
+                  additions = additions)
 model <- fit_model(out, chains = 1, iter = 10)
 survival_table(model)
 }
