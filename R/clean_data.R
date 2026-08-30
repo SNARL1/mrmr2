@@ -47,13 +47,13 @@
 #' library(readr)
 #'
 #' captures <- system.file('extdata', 'capture-example.csv',
-#'     package = 'mrmr2') %>%
-#'   read_csv
+#'     package = 'mrmr2') |>
+#'   read_csv()
 #' translocations <- system.file('extdata', 'translocation-example.csv',
-#'     package = 'mrmr2') %>%
-#'   read_csv
-#' surveys <- system.file('extdata', 'survey-example.csv', package = 'mrmr2') %>%
-#'   read_csv
+#'     package = 'mrmr2') |>
+#'   read_csv()
+#' surveys <- system.file('extdata', 'survey-example.csv', package = 'mrmr2') |>
+#'   read_csv()
 #'
 #' # read and clean the data using defaults
 #' data <- clean_data(captures, surveys, translocations)
@@ -67,8 +67,8 @@
 #'}
 #' @export
 #' @importFrom readr read_csv parse_number
-#' @importFrom dplyr %>% mutate group_by summarize ungroup full_join
-#' arrange left_join select filter distinct anti_join lead n
+#' @importFrom dplyr mutate group_by summarize ungroup full_join
+#'   arrange left_join select filter distinct anti_join lead n
 #' @importFrom tibble tibble
 #' @importFrom tidyr complete separate unite
 #' @importFrom reshape2 acast
@@ -144,11 +144,11 @@ clean_data <- function(captures, surveys,
   # check that date columns can be parsed as Date objects
   surveys$survey_date <- parse_as_date(surveys$survey_date)
   captures$survey_date <- parse_as_date(captures$survey_date)
-  surveys <- surveys %>%
-    mutate(primary_period = .data$primary_period + 1) %>%
-    group_by(.data$primary_period, .data$secondary_period) %>%
-    summarize(survey_date = min(.data$survey_date)) %>%
-    ungroup %>%
+  surveys <- surveys |>
+    mutate(primary_period = .data$primary_period + 1) |>
+    group_by(.data$primary_period, .data$secondary_period) |>
+    summarize(survey_date = min(.data$survey_date)) |>
+    ungroup() |>
     mutate(year = year(.data$survey_date),
            is_overwinter = lead(.data$year) - .data$year == 1,
            is_overwinter = ifelse(is.na(.data$is_overwinter),
@@ -160,16 +160,16 @@ clean_data <- function(captures, surveys,
                                  survey_date = min(surveys$survey_date) - 14,
                                  year = min(surveys$year),
                                  is_overwinter = FALSE)
-  surveys <- full_join(surveys, dummy_primary_period) %>%
+  surveys <- full_join(surveys, dummy_primary_period) |>
     arrange(.data$primary_period, .data$secondary_period)
 
 
 
   if (any_translocations) {
     translocations$release_date <- parse_as_date(translocations$release_date)
-    translocations <- translocations %>%
+    translocations <- translocations |>
       mutate(pit_tag_id = as.character(.data$pit_tag_id),
-             survey_date = as.Date(.data$release_date)) %>%
+             survey_date = as.Date(.data$release_date)) |>
       left_join(filter(surveys, .data$secondary_period == 0))
     transloc_tags <- translocations$pit_tag_id
   } else {
@@ -185,9 +185,9 @@ clean_data <- function(captures, surveys,
       }
     }
     removals$removal_date <- parse_as_date(removals$removal_date)
-    removals <- removals %>%
+    removals <- removals |>
       mutate(pit_tag_id = as.character(.data$pit_tag_id),
-             survey_date = as.Date(.data$removal_date)) %>%
+             survey_date = as.Date(.data$removal_date)) |>
       left_join(surveys)
     removal_tags <- removals$pit_tag_id
   } else {
@@ -201,11 +201,11 @@ clean_data <- function(captures, surveys,
   M <- n_obs + n_aug
 
   # find J, the number of secondary periods per primary period
-  J <- surveys %>%
-    group_by(.data$primary_period) %>%
-    summarize(n_sec_periods = max(.data$secondary_period)) %>%
-    select("n_sec_periods") %>%
-    unlist
+  J <- surveys |>
+    group_by(.data$primary_period) |>
+    summarize(n_sec_periods = max(.data$secondary_period)) |>
+    select("n_sec_periods") |>
+    unlist()
 
   ever_detected <- transloc_tags %in% captures$pit_tag_id
   introduced_but_never_detected <- transloc_tags[!ever_detected]
@@ -215,30 +215,30 @@ clean_data <- function(captures, surveys,
                   y = 1)
 
   captures$pit_tag_id <- as.character(captures$pit_tag_id)
-  y_df <- captures %>%
-    mutate(y = 2) %>%
-    left_join(surveys) %>%
-    select(c("pit_tag_id", "primary_period", "secondary_period", "y")) %>%
-    unite("survey_id", c("primary_period", "secondary_period"), sep = '_') %>%
+  y_df <- captures |>
+    mutate(y = 2) |>
+    left_join(surveys) |>
+    select(c("pit_tag_id", "primary_period", "secondary_period", "y")) |>
+    unite("survey_id", c("primary_period", "secondary_period"), sep = '_') |>
     # fill in implicit 'not detected' values y = 1
-    complete(.data$pit_tag_id, .data$survey_id, fill = list(y = 1)) %>%
+    complete(.data$pit_tag_id, .data$survey_id, fill = list(y = 1)) |>
     separate(.data$survey_id,
-             into = c('primary_period', 'secondary_period')) %>%
+             into = c('primary_period', 'secondary_period')) |>
     mutate(primary_period = parse_number(.data$primary_period),
            secondary_period = parse_number(.data$secondary_period),
-           pit_tag_id = as.character(.data$pit_tag_id)) %>%
+           pit_tag_id = as.character(.data$pit_tag_id)) |>
     arrange(.data$pit_tag_id, .data$primary_period, .data$secondary_period)
 
   # augment y_df with new individuals
-  y_df <- y_df %>%
-    unite("survey_identifier", c("primary_period", "secondary_period")) %>%
-    full_join(y_aug) %>%
-    complete(.data$pit_tag_id, .data$survey_identifier, fill = list(y = 1)) %>%
-    filter(!is.na(.data$survey_identifier)) %>%
+  y_df <- y_df |>
+    unite("survey_identifier", c("primary_period", "secondary_period")) |>
+    full_join(y_aug) |>
+    complete(.data$pit_tag_id, .data$survey_identifier, fill = list(y = 1)) |>
+    filter(!is.na(.data$survey_identifier)) |>
     separate(.data$survey_identifier,
-             into = c('primary_period', 'secondary_period')) %>%
+             into = c('primary_period', 'secondary_period')) |>
     mutate(primary_period = parse_number(.data$primary_period),
-           secondary_period = parse_number(.data$secondary_period)) %>%
+           secondary_period = parse_number(.data$secondary_period)) |>
     arrange(.data$pit_tag_id, .data$primary_period, .data$secondary_period)
 
   stopifnot(!any(is.na(y_df$y)))
@@ -253,36 +253,36 @@ clean_data <- function(captures, surveys,
     secondary_period = 1)
 
   # also augment for surveys with no captures
-  surveys_with_no_captures <- surveys %>%
-    distinct(.data$primary_period, .data$secondary_period) %>%
-    anti_join(captures %>% left_join(surveys)) %>%
-    filter(.data$secondary_period != 0) %>%
+  surveys_with_no_captures <- surveys |>
+    distinct(.data$primary_period, .data$secondary_period) |>
+    anti_join(captures |> left_join(surveys)) |>
+    filter(.data$secondary_period != 0) |>
     mutate(y = 1)
 
-  y_df <- y_df %>%
-    full_join(no_survey_df) %>%
-    unite("survey_id", c("primary_period", "secondary_period"), sep = "_") %>%
-    complete(.data$pit_tag_id, .data$survey_id, fill = list(y = 0)) %>%
+  y_df <- y_df |>
+    full_join(no_survey_df) |>
+    unite("survey_id", c("primary_period", "secondary_period"), sep = "_") |>
+    complete(.data$pit_tag_id, .data$survey_id, fill = list(y = 0)) |>
     separate(.data$survey_id,
-             into = c('primary_period', 'secondary_period')) %>%
+             into = c('primary_period', 'secondary_period')) |>
     mutate(primary_period = parse_number(.data$primary_period),
-           secondary_period = parse_number(.data$secondary_period)) %>%
-    full_join(surveys_with_no_captures) %>%
-    unite("survey_id", c("primary_period", "secondary_period"), sep = "_") %>%
-    complete(.data$pit_tag_id, .data$survey_id, fill = list(y = 1)) %>%
+           secondary_period = parse_number(.data$secondary_period)) |>
+    full_join(surveys_with_no_captures) |>
+    unite("survey_id", c("primary_period", "secondary_period"), sep = "_") |>
+    complete(.data$pit_tag_id, .data$survey_id, fill = list(y = 1)) |>
     separate(.data$survey_id,
-             into = c('primary_period', 'secondary_period')) %>%
+             into = c('primary_period', 'secondary_period')) |>
     mutate(primary_period = parse_number(.data$primary_period),
-           secondary_period = parse_number(.data$secondary_period)) %>%
-    arrange(.data$pit_tag_id, .data$primary_period, .data$secondary_period) %>%
+           secondary_period = parse_number(.data$secondary_period)) |>
+    arrange(.data$pit_tag_id, .data$primary_period, .data$secondary_period) |>
     filter(!is.na(.data$pit_tag_id))
 
 
 
 
   # Merge survival covariates into one tibble -------------------------------
-  survival_covariate_df <- y_df %>%
-    dplyr::distinct(.data$pit_tag_id) %>%
+  survival_covariate_df <- y_df |>
+    dplyr::distinct(.data$pit_tag_id) |>
     dplyr::arrange(.data$pit_tag_id)
 
   if (survival_formula_specified) {
@@ -292,23 +292,23 @@ clean_data <- function(captures, surveys,
     not_na <- function(x) !is.na(x)
 
     if (any(survival_covariate_columns %in% names(captures))) {
-      survival_covariate_df <- survival_covariate_df %>%
-        dplyr::full_join(dplyr::distinct(captures[, join_cols])) %>%
+      survival_covariate_df <- survival_covariate_df |>
+        dplyr::full_join(dplyr::distinct(captures[, join_cols])) |>
         dplyr::filter_at(survival_covariate_columns, not_na)
     }
 
     if (any_translocations) {
       # read in covariate data from translocations
-      survival_covariate_df <- survival_covariate_df %>%
-        dplyr::full_join(dplyr::distinct(translocations[, join_cols])) %>%
+      survival_covariate_df <- survival_covariate_df |>
+        dplyr::full_join(dplyr::distinct(translocations[, join_cols])) |>
         dplyr::filter_at(survival_covariate_columns, not_na)
     }
     stopifnot(all(survival_covariate_columns %in% names(survival_covariate_df)))
 
     # then ensure that all tags are present
     # and sort by tag to ensure same order as Y observation matrix
-    survival_covariate_df <- survival_covariate_df %>%
-      dplyr::full_join(distinct(y_df, .data$pit_tag_id)) %>%
+    survival_covariate_df <- survival_covariate_df |>
+      dplyr::full_join(distinct(y_df, .data$pit_tag_id)) |>
       dplyr::arrange(.data$pit_tag_id)
 
     # for each survival covariate, fill in missing values
@@ -322,8 +322,8 @@ clean_data <- function(captures, surveys,
       # make sure there are no NA values after filling
       stopifnot(!any(is.na(survival_covariate_df[[nam]])))
       # make sure each individual gets just one unique value
-      i_counts <- survival_covariate_df %>%
-        group_by(.data$pit_tag_id) %>%
+      i_counts <- survival_covariate_df |>
+        group_by(.data$pit_tag_id) |>
         summarize(nt = length(unique(!!nam)))
       stopifnot(all(i_counts$nt == 1))
     }
@@ -333,16 +333,16 @@ clean_data <- function(captures, surveys,
   # no surveys
   stopifnot(
     all(
-      y_df %>%
-        filter(.data$y == 0) %>%
-        distinct(.data$primary_period) %>%
-        unlist == sort(filter(surveys,
+      y_df |>
+        filter(.data$y == 0) |>
+        distinct(.data$primary_period) |>
+        unlist() == sort(filter(surveys,
                               .data$secondary_period == 0)$primary_period)
     )
   )
 
-  Y <- y_df[, !names(y_df) %in% names(survival_fill_value)] %>%
-    filter(.data$secondary_period > 0) %>%
+  Y <- y_df[, !names(y_df) %in% names(survival_fill_value)] |>
+    filter(.data$secondary_period > 0) |>
     acast(formula = pit_tag_id ~ primary_period ~ secondary_period,
           fill = 0, value.var = "y")
 
@@ -390,16 +390,16 @@ clean_data <- function(captures, surveys,
   }
   stopifnot(length(jvec) == Jtot)
 
-  survey_number_df <- tibble(primary_period = 1:max(surveys$primary_period)) %>%
+  survey_number_df <- tibble(primary_period = 1:max(surveys$primary_period)) |>
     mutate(secondary_idx = 1)
 
   p_df <- tibble(primary_period = rep(1:max(surveys$primary_period), J),
-                 secondary_idx = jvec) %>%
+                 secondary_idx = jvec) |>
     mutate(j_idx = 1:n())
 
-  j_idx <- survey_number_df %>%
-    dplyr::select(c("primary_period", "secondary_idx")) %>%
-    full_join(p_df) %>%
+  j_idx <- survey_number_df |>
+    dplyr::select(c("primary_period", "secondary_idx")) |>
+    full_join(p_df) |>
     acast(primary_period ~ secondary_idx,
           fill = 0,
           value.var = 'j_idx')
@@ -418,7 +418,7 @@ clean_data <- function(captures, surveys,
 
   # verify that the primary periods with no surveys have all zeros in j_idx
   stopifnot(identical(names(which(rowSums(j_idx) == 0)),
-                        which(J == 0) %>% as.character))
+                        which(J == 0) |> as.character()))
 
   # Check whether there is any natural (non-translocation) recruitment
   any_recruitment <- TRUE

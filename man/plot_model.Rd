@@ -19,11 +19,11 @@ A ggplot object.
 Plot a mark-recapture model's output
 }
 \details{
-For \code{what = "survival"}, only the posterior draws of the latent state
-(\code{s}) for translocated individuals are pulled from the fit, rather than
-for every individual (real and data-augmented pseudo-individual) tracked
-by the model. This keeps memory use for this plot low even for sites with
-a large augmented superpopulation.
+For \code{what = "survival"}, only the posterior draws of the
+latent state (\code{s}) for translocated individuals are pulled from the
+fit, rather than for every individual (real and data-augmented
+pseudo-individual) tracked by the model. This keeps memory use for this
+plot low even for sites with a large augmented superpopulation.
 }
 \examples{
 \dontrun{

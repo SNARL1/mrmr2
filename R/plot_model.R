@@ -4,6 +4,11 @@
 #' @param what What to plot. Must be a character string of either
 #' "abundance", "recruitment", or "survival".
 #' @return A ggplot object.
+#' @details For \code{what = "survival"}, only the posterior draws of the
+#' latent state (\code{s}) for translocated individuals are pulled from the
+#' fit, rather than for every individual (real and data-augmented
+#' pseudo-individual) tracked by the model. This keeps memory use for this
+#' plot low even for sites with a large augmented superpopulation.
 #' @examples
 #' \dontrun{
 #' captures <- system.file("extdata", "capture-example.csv", package = "mrmr2")
@@ -16,10 +21,10 @@
 #' }
 #' @export
 #' @importFrom dplyr group_by summarize left_join ungroup filter distinct
-#' rename
+#'   rename
 #' @importFrom ggplot2 ggplot geom_line geom_ribbon xlab ylab facet_wrap theme
-#' scale_color_brewer aes element_text scale_fill_brewer scale_x_date geom_point
-#' geom_vline geom_text geom_linerange
+#'   scale_color_brewer aes element_text scale_fill_brewer scale_x_date geom_point
+#'   geom_vline geom_text geom_linerange
 #' @importFrom reshape2 melt
 #' @importFrom rlang .data
 #' @importFrom tibble as_tibble
@@ -37,8 +42,8 @@ plot_model <- function(model, what) {
                  "translocation data."))
     }
 
-    primary_period_dates <- model$data$surveys %>%
-      group_by(.data$primary_period) %>%
+    primary_period_dates <- model$data$surveys |>
+      group_by(.data$primary_period) |>
       summarize(date = min(.data$survey_date),
                 year = min(.data$year))
 
@@ -63,25 +68,25 @@ plot_model <- function(model, what) {
       rep(seq_len(n_periods), times = length(transloc_idx)), "]"
     )
 
-    p <- model$m_fit$draws(variables = s_varnames, format = "draws_df") %>%
-      tidyr::pivot_longer(tidyselect::starts_with('s')) %>%
-      suppressWarnings() %>%
-      mutate(get_numeric_indices(.data$name)) %>%
+    p <- model$m_fit$draws(variables = s_varnames, format = "draws_df") |>
+      tidyr::pivot_longer(tidyselect::starts_with('s')) |>
+      suppressWarnings() |>
+      mutate(get_numeric_indices(.data$name)) |>
       rename(
         primary_period = .data$index_2
-      ) %>%
-      mutate(pit_tag_id = pit_tag_ids[.data$index_1]) %>%
-      left_join(transloc_dates, by = "pit_tag_id") %>%
-      group_by(.data$release_date, .data$primary_period, .data$.draw) %>%
-      summarize(fraction_alive = mean(.data$value == 2), .groups = "drop") %>%
-      filter(.data$primary_period > 1) %>%
-      left_join(primary_period_dates) %>%
-      filter(.data$date >= .data$release_date) %>%
-      group_by(.data$release_date, .data$date) %>%
+      ) |>
+      mutate(pit_tag_id = pit_tag_ids[.data$index_1]) |>
+      left_join(transloc_dates, by = "pit_tag_id") |>
+      group_by(.data$release_date, .data$primary_period, .data$.draw) |>
+      summarize(fraction_alive = mean(.data$value == 2), .groups = "drop") |>
+      filter(.data$primary_period > 1) |>
+      left_join(primary_period_dates) |>
+      filter(.data$date >= .data$release_date) |>
+      group_by(.data$release_date, .data$date) |>
       summarize(lo = quantile(.data$fraction_alive, .025),
                 med = median(.data$fraction_alive),
                 hi = quantile(.data$fraction_alive, .975),
-                .groups = "drop") %>%
+                .groups = "drop") |>
       ggplot(aes(.data$date, .data$med,
                  color = as.factor(.data$release_date),
                  fill = as.factor(.data$release_date))) +
@@ -95,26 +100,26 @@ plot_model <- function(model, what) {
       scale_fill_brewer('Introduction date', type = 'qual') +
       scale_x_date(date_breaks = "1 year")
   } else {
-    survey_prim_periods <- model$data$surveys %>%
-      group_by(.data$primary_period) %>%
+    survey_prim_periods <- model$data$surveys |>
+      group_by(.data$primary_period) |>
       filter(.data$secondary_period == min(.data$secondary_period))
 
     survey_prim_periods <- ungroup(survey_prim_periods)
 
     if (what == "abundance") {
-      p <- model$m_fit$draws("N", format = "draws_df") %>%
-        tidyr::pivot_longer(tidyselect::starts_with("N")) %>%
-        suppressWarnings() %>%
+      p <- model$m_fit$draws("N", format = "draws_df") |>
+        tidyr::pivot_longer(tidyselect::starts_with("N")) |>
+        suppressWarnings() |>
         mutate(
           get_numeric_indices(.data$name),
           primary_period = .data$index_1 + 1
-        ) %>%
-        group_by(.data$primary_period) %>%
+        ) |>
+        group_by(.data$primary_period) |>
         summarize(lo = quantile(.data$value, .025),
                   med = median(.data$value),
                   hi = quantile(.data$value, .975),
-                  .groups = "drop") %>%
-        left_join(survey_prim_periods, by = "primary_period") %>%
+                  .groups = "drop") |>
+        left_join(survey_prim_periods, by = "primary_period") |>
         ggplot(aes(.data$survey_date, .data$med)) +
         geom_line() +
         geom_point() +
@@ -127,19 +132,19 @@ plot_model <- function(model, what) {
     }
 
     if (what == "recruitment") {
-      p <- model$m_fit$draws("B", format = "draws_df") %>%
-        tidyr::pivot_longer(tidyselect::starts_with("B")) %>%
-        suppressWarnings() %>%
+      p <- model$m_fit$draws("B", format = "draws_df") |>
+        tidyr::pivot_longer(tidyselect::starts_with("B")) |>
+        suppressWarnings() |>
         mutate(
           get_numeric_indices(.data$name),
           primary_period = .data$index_1 + 1
-        ) %>%
-        group_by(.data$primary_period) %>%
+        ) |>
+        group_by(.data$primary_period) |>
         summarize(lo = quantile(.data$value, .025),
                   med = median(.data$value),
                   hi = quantile(.data$value, .975),
-                  .groups = "drop") %>%
-        left_join(survey_prim_periods, by = "primary_period") %>%
+                  .groups = "drop") |>
+        left_join(survey_prim_periods, by = "primary_period") |>
         ggplot(aes(.data$survey_date, .data$med)) +
         geom_line() +
         geom_point() +
@@ -152,9 +157,9 @@ plot_model <- function(model, what) {
     }
 
     if (any_translocations) {
-      transloc_sums <- model$data$translocations %>%
-        group_by(.data$release_date) %>%
-        summarize(n = length(unique(.data$pit_tag_id))) %>%
+      transloc_sums <- model$data$translocations |>
+        group_by(.data$release_date) |>
+        summarize(n = length(unique(.data$pit_tag_id))) |>
         mutate(year = lubridate::year(.data$release_date))
       p <- p +
         geom_vline(aes(xintercept = .data$release_date),
@@ -180,6 +185,6 @@ plot_model <- function(model, what) {
 get_numeric_indices <- function(string) {
   idx_mat <- stringr::str_extract_all(string, "[0-9]+", simplify = TRUE)
   colnames(idx_mat) <- paste0("index_", seq_len(ncol(idx_mat)))
-  tibble::as_tibble(idx_mat) %>%
+  tibble::as_tibble(idx_mat) |>
     dplyr::mutate_all(readr::parse_integer)
 }

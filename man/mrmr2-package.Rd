@@ -2,11 +2,21 @@
 % Please edit documentation in R/mrmr2-package.R
 \docType{package}
 \name{mrmr2-package}
-\alias{mrmr2-package}
 \alias{mrmr2}
-\title{The 'mrmr2' package.}
+\alias{mrmr2-package}
+\title{mrmr2: Mark Recapture Miscellany in R, Extended}
 \description{
 CMR models in R. Extends mrmr with optional
 detection-heterogeneity random effects and a lower-memory survival
 plotting method.
+}
+\author{
+\strong{Maintainer}: Roland Knapp \email{roland.knapp@ucsb.edu} (\href{https://orcid.org/0000-0002-1954-2745}{ORCID})
+
+Authors:
+\itemize{
+  \item Roland Knapp \email{roland.knapp@ucsb.edu} (\href{https://orcid.org/0000-0002-1954-2745}{ORCID})
+  \item Max Joseph \email{maxwellbjoseph@gmail.com} (\href{https://orcid.org/0000-0002-7745-9990}{ORCID})
+}
+
 }

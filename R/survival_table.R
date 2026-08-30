@@ -43,26 +43,26 @@ survival_table <- function(
                "table cannot be created."))
   }
 
-   primary_period_dates <- model$data$surveys %>%
-    group_by(.data$primary_period) %>%
+   primary_period_dates <- model$data$surveys |>
+    group_by(.data$primary_period) |>
     summarize(date = min(.data$survey_date),
-              year = min(.data$year)) %>%
-    ungroup
+              year = min(.data$year)) |>
+    ungroup()
 
-  survival_summary <- model$m_fit$draws("s", format = "draws_df") %>%
-    posterior::thin_draws(thin) %>%
-    tidyr::pivot_longer(tidyselect::starts_with("s")) %>%
-    suppressWarnings() %>%
+  survival_summary <- model$m_fit$draws("s", format = "draws_df") |>
+    posterior::thin_draws(thin) |>
+    tidyr::pivot_longer(tidyselect::starts_with("s")) |>
+    suppressWarnings() |>
     mutate(
       get_numeric_indices(.data$name),
       primary_period = .data$index_2,
       pit_tag_id = dimnames(model$data$stan_d$Y)[[1]][.data$index_1]
-    ) %>%
-    filter(.data$pit_tag_id %in% as.character(model$data$translocations$pit_tag_id)) %>%
+    ) |>
+    filter(.data$pit_tag_id %in% as.character(model$data$translocations$pit_tag_id)) |>
     left_join(distinct(model$data$translocations,
-                       .data$pit_tag_id, .data$release_date)) %>%
-    left_join(primary_period_dates) %>%
-    filter(.data$date > .data$release_date) %>%
+                       .data$pit_tag_id, .data$release_date)) |>
+    left_join(primary_period_dates) |>
+    filter(.data$date > .data$release_date) |>
     dplyr::transmute(
       .data$.draw, .data$value, .data$primary_period, .data$pit_tag_id,
       .data$release_date, .data$date, .data$year,
@@ -71,30 +71,30 @@ survival_table <- function(
     )
 
 
-  survival_summary <- survival_summary %>%
+  survival_summary <- survival_summary |>
     group_by(.data$years_since_introduction, .data$.draw)
 
   if (by_cohort) {
-    survival_summary <- survival_summary %>%
+    survival_summary <- survival_summary |>
       group_by(.data$release_date, .add = TRUE)
   }
 
   if (by_individual) {
-    survival_summary <- survival_summary %>%
+    survival_summary <- survival_summary |>
       group_by(.data$pit_tag_id, .add = TRUE)
   }
 
   # for each group, compute fraction alive
-  group_summaries <- survival_summary %>%
-    summarize(fraction_alive = mean(.data$value == 2), .groups = "drop") %>%
+  group_summaries <- survival_summary |>
+    summarize(fraction_alive = mean(.data$value == 2), .groups = "drop") |>
     group_by(.data$years_since_introduction, .data$release_date)
 
   if (by_individual) {
-    group_summaries <- group_summaries %>%
+    group_summaries <- group_summaries |>
       group_by(.data$pit_tag_id, .add = TRUE)
   }
 
-  group_summaries  %>%
+  group_summaries  |>
     summarize(
       lo_survival = quantile(.data$fraction_alive, .025),
       median_survival = median(.data$fraction_alive),

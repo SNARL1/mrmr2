@@ -48,17 +48,17 @@
 #' within-period/occasion detection random effects), or `"indiv_re"` (adds
 #' an individual-level detection random effect). See Details.
 #' @inheritParams cmdstanr::cmdstan_model
-#' @inheritParams cmdstanr::`model-method-sample`
+#' @inheritParams cmdstanr::sample
 #' @return A list containing the model object, extracted posterior draws,
 #' input data, and the name of the `model` that was fit.
 #' @examples
 #' \dontrun{
-#' captures <- system.file("extdata", "capture-example.csv", package = "mrmr2") %>%
+#' captures <- system.file("extdata", "capture-example.csv", package = "mrmr2") |>
 #'   readr::read_csv()
 #' translocations <- system.file("extdata", "translocation-example.csv",
-#'                               package = "mrmr2") %>%
+#'                               package = "mrmr2") |>
 #'   readr::read_csv()
-#' surveys <- system.file("extdata", "survey-example.csv", package = "mrmr2") %>%
+#' surveys <- system.file("extdata", "survey-example.csv", package = "mrmr2") |>
 #'   readr::read_csv()
 #' out <- clean_data(captures, surveys, translocations)
 #'
