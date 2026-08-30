@@ -2,12 +2,17 @@ Package: mrmr2
 Type: Package
 Title: Mark Recapture Miscellany in R, Extended
 Version: 0.2
-Authors@R:
+Authors@R: c(
     person(given = "Max",
            family = "Joseph",
-           role = c("aut", "cre"),
+           role = c("aut"),
            email = "maxwellbjoseph@gmail.com",
-           comment = c(ORCID = "0000-0002-7745-9990"))
+           comment = c(ORCID = "0000-0002-7745-9990")),
+    person(given = "Roland",
+           family = "Knapp",
+           role = c("aut", "cre"),
+           email = "roland.knapp@ucsb.edu",
+           comment = c(ORCID = "0000-0002-1954-2745")))
 Description: Automates some data processing steps for mark recapture analysis.
     Extends mrmr with optional detection-heterogeneity random effects and a
     lower-memory survival plotting method.
