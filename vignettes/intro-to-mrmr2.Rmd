@@ -21,11 +21,13 @@ knitr::opts_chunk$set(
 
 The `mrmr2` package is designed to simplify and expedite mark recapture
 data processing, parameter estimation, and visualization for a narrow
-class of mark recapture data (namely, those collected by the Sierra
-Nevada Amphibian Research Group). It extends the original `mrmr` package
-with optional detection-heterogeneity random effects (see [Detection
-random-effect models](#detection-re)) and a lower-memory survival
-plotting method, and can be installed alongside `mrmr` without conflict.
+class of mark recapture data (namely, those collected by researchers in
+the Mountain Lakes Research Group (University of California, Sierra
+Nevada Amphibian Research Laboratory). It extends the original `mrmr`
+package with optional detection-heterogeneity random effects (see
+[Detection random-effect models](#detection-re)) and a lower-memory
+survival plotting method, and can be installed alongside `mrmr` without
+conflict.
 
 # Workflow overview
 
@@ -38,7 +40,9 @@ The typical workflow involves three steps:
 ## Data specifications
 
 The package comes with example data that illustrate the expected format.
-Three files are needed.
+Three files are needed. These files are typically named something like
+`capture`, `translocation`, and `survey`, but the files are specified in
+the [data processing step](#data-process) and any names are acceptable.
 
 The first file specifies capture data:
 
@@ -50,59 +54,96 @@ library(mrmr2)
 ```
 
 ```{r show-capture-data}
-captures <- system.file("extdata", 
-                                "capture-example.csv", 
-                                package = "mrmr2") %>%
-  read_csv
+capture <- read_csv(
+  system.file(
+    "extdata", 
+    "capture-example.csv",
+    package = "mrmr2"
+  )
+)
+capture <- capture |> 
+mutate(pit_tag_id = as.character(pit_tag_id))
 
-glimpse(captures)
+glimpse(capture)
 ```
 
 Note that the `system.file` function generates a path to the
-`capture-example.csv` file, but in a real application, you would likely
-use a path to a local file (real data, not the example data included in
-the package). The files must be formatted with the same columns and
-conventions uesd in the example data. Each row in this file represents a
-capture or recapture event.
+`capture-example.csv` file, but in a real application, you would use a
+path to a local file (real data, not the example data included in the
+package). The capture file must contain, at a minimum, `pit_tag_id` and
+`survey_date` columns, but additional columns can also be included
+(e.g., [survival covariates](#survival-covar)). Each row in this file
+represents a capture or recapture event.
 
-The second file specifies translocation data:
+The second file specifies translocation/reintroduction data, and at a
+minimum it must contain `release_date` and `pit_tag_id` columns:
 
 ```{r show-trans-data}
-translocations <- system.file("extdata", 
-                                      "translocation-example.csv", 
-                                      package = "mrmr2") %>%
-  read_csv
+translocation <- read_csv(
+  system.file(
+    "extdata", 
+    "translocation-example.csv", 
+    package = "mrmr2"
+  )
+)
 
-glimpse(translocations)
+glimpse(translocation)
 ```
 
 Each row corresponds to a translocation event of one unique individual.
+Because some mark-recapture datasets do not include translocation or
+reintroduction actions, this file is optional.
 
-The third file specifies survey-level data:
+The third file specifies survey-level data, and at a minimum it must
+contain `survey_date`, `primary_period`, and `secondary_period columns`:
 
 ```{r show-survey-data}
-surveys <- system.file("extdata", 
-                               "survey-example.csv", 
-                                package = "mrmr2") %>%
-  read_csv
+survey <- read_csv(
+  system.file(
+    "extdata", 
+    "survey-example.csv", 
+    package = "mrmr2"
+  )
+)
 
-glimpse(surveys)
+glimpse(survey)
 ```
 
-Here, each row is a unique survey.
+Here, each row is a unique survey. If translocations or reintroductions
+occurred at the site, these actions need to be included in the `survey`
+dataset, each as a typical survey event. Specifically, `survey_date` and
+`primary_period` values are provided, the `primary_period` is sequential
+with all survey records in the dataset based on `visit_date`, and
+`secondary_period` = 0. Translocations/reintroductions cannot occur
+during a primary period. Therefore, the `survey_date` for
+translocation/reintroduction records cannot overlap with the
+`survey_date` range of any primary period.
 
-## Data processing
+## Data processing {#data-process}
 
 To load and process the data, provide paths to the data files as
 arguments to the `mrmr2::clean_data()` function:
 
 ```{r clean-data, message=FALSE}
-data <- clean_data(captures, surveys, translocations)
+data <- clean_data(capture, survey, translocation)
 ```
 
-The output provides data frames as list elements, and a list element
-called `stan_d`, which contains data that has been pre-processed for
-model fitting.
+This function performs several data-preparation steps. It checks the
+capture, survey, and translocation/reintroduction data for common
+problems (e.g., duplicate records, dead animals left in the capture
+data, unparseable dates), and renumbers the primary periods and inserts
+a placeholder pre-study period, deriving each period's representative
+survey date, year, and overwinter status from the provided dates. It
+builds the individual-by-primary-period-by-secondary-period capture
+history, then performs data augmentation: padding the observed
+individuals with a large number of all-zero pseudo-individuals to form
+the fixed-size superpopulation of $M$ individuals referenced in [Model
+structure](#model-structure) below. Finally, it constructs the detection
+and survival covariate design matrices from the `capture_formula` and
+`survival_formula` arguments, described in the next two sections. The
+output provides data frames as list elements, and a list element called
+`stan_d`, which contains data that has been pre-processed for model
+fitting.
 
 ### Including detection/non-detection covariates
 
@@ -110,17 +151,17 @@ Survey-level covariates that might affect the probability of detection
 can be included via the `capture_formula` argument to `clean_data`.
 **Note:** it is a good idea to ensure that any continuous covariates are
 rescaled prior to using them as covariates to have mean = 0 and unit
-standard deviation. This can be acheived by adding a column to the
+standard deviation. This can be achieved by adding a column to the
 `captures` data Using a covariate value like `year`, which typically has
-a mean in the thousands and a standard deviation far from one will
-almost assurredly result in numerical issues when fitting a model.
+a mean in the thousands and a standard deviation far from one may cause
+numerical issues when fitting a model.
 
-Assuming we wanted to include a covariate for detection like
-`person_hours`, we can do so as follows:
+A detection covariate, such as `person_hours`, can be included as
+follows:
 
 ```{r detection-covariate, message=FALSE, eval=FALSE}
 # center and scale the covariate
-captures <- captures %>%
+captures <- captures |>
   mutate(c_person_hours = c(scale(person_hours)))
 
 # specify the formula
@@ -128,25 +169,25 @@ data <- clean_data(captures, surveys, translocations,
                    capture_formula = ~ c_person_hours)
 ```
 
-### Including survival covariates
+### Including survival covariates {#survival-covar}
 
-Individual-level survival covariates can be included optionally via the
+Individual-level survival covariates can be included via the
 `survival_formula` and `survival_fill_value` arguments. Both of these
-must be specified, because covariate values for pseudo-individuals must
-be filled in (they are never observed). So, for example, to evaluate the
-effect of an experimental treatment, if some individuals belong to a
-"treatment" group and others belong to an "control" group, then a group
-must be specified as a fill value (e.g., "wild-caught" or "control",
-depending on the experiment):
+arguments must be specified because covariate values for
+pseudo-individuals must be filled in (they are never observed). For
+example, to evaluate the effect of an experimental treatment, if some
+individuals belong to a "treated" group and others belong to an
+"control" group, then one of these groups must be specified as a fill
+value (e.g., "treated" or "control", depending on the experiment):
 
 ```{r survival-covariate, message=FALSE, eval=FALSE}
 # specify the formula
 data <- clean_data(captures, surveys, translocations,
                    survival_formula = ~ treatment, 
-                   survival_fill_value = c(treatment = "wild-caught"))
+                   survival_fill_value = c(treatment = "treated"))
 ```
 
-## Model structure
+## Model structure {#model-structure}
 
 The `mrmr2` package implements a Bayesian open-population Jolly-Seber
 mark recapture model with known additions to the population (introduced
@@ -168,28 +209,47 @@ tag ID records).
 To fit a mark-recapture model, use `mrmr2::fit_model()`. This model
 accounts for known introductions into the population, and has random
 effects to account for variation in survival and recruitment through
-time. The example below uses few iterations for speed, but it is a good
-idea to run 4 chains, and 1000 warmup and 1000 sampling iterations.
+time. It is also possible to add random effects to account for
+[variation in detection](#detection-re) at the period, occasion, and
+individual level.
 
-To use within-chain parallelization, you must provide the following
-arguments:
-
-- `cpp_options = list(stan_threads = TRUE)` which compiles the model
-  with threading support
-- `threads_per_chain` set to some integer value \> 1. I usually try to
-  set this to a value that ensures that all physical cores are being
-  used. For example, on a machine with 8 physical cores, I would run 4
-  chains, with 2 threads per chain. On a machine with 16 physical cores,
-  you could run 4 chains with 4 threads per chain.
+The default number of chains is 4. Generally at least 1000 warmup and
+1000 sampling iterations should be used; the example model below uses
+only 10 iterations of each to ensure a short run time.
 
 ```{r fit-model, message=FALSE, warning=FALSE, results='hide'}
 mod <- fit_model(
   data = data, 
-  parallel_chains = parallel::detectCores(), 
+  chains = 4,
   iter_warmup = 10, 
-  iter_sampling = 10, 
-  threads_per_chain = 1, 
-  cpp_options = list(stan_threads = TRUE)
+  iter_sampling = 10
+)
+```
+
+To use within-chain parallelization, provide the following additional
+arguments:
+
+- `cpp_options = list(stan_threads = TRUE)` which compiles the model
+  with threading support
+- `threads_per_chain` set to some integer value \> 1. To allow the run
+  to finish as quickly as possible, set this to a value that ensures
+  that all physical cores are being used. The number of parallel_chains
+  × threads_per_chain must equal the number of physical cores available.
+  For example, on a machine with 8 physical cores, specify 4 chains, 4
+  parallel chains, and 2 threads per chain. On a machine with 16
+  physical cores, specify 4 chains, 4 parallel chains, and 4 threads per
+  chain. In the following code chunk, threads per chain is set
+  automatically.
+
+```{r fit-model-threaded, message=FALSE, warning=FALSE, eval=FALSE}
+mod <- fit_model(
+  data = data, 
+  chains = 4,
+  parallel_chains = 4,
+  threads_per_chain = max(1, parallel::detectCores() %/% 4), 
+  cpp_options = list(stan_threads = TRUE),
+  iter_warmup = 1000, 
+  iter_sampling = 1000
 )
 ```
 
@@ -205,8 +265,8 @@ pars_to_plot <- c('alpha_lambda',
 bayesplot::mcmc_trace(mod$m_fit$draws(pars_to_plot))
 ```
 
-It is also a good idea to look at Rhat estimates to see whether they
-indicate of a lack of convergence (Rhat values $\geq$ 1.01):
+Also check the Rhat estimates to see whether they indicate of a lack of
+convergence (Rhat values $\geq$ 1.01):
 
 ```{r print-model}
 mod$m_fit$summary(pars_to_plot)
@@ -353,16 +413,16 @@ period).
 ```{r removals, message = FALSE, eval = FALSE}
 captures <- system.file("extdata", 
                         "equid-captures.csv", 
-                         package = "mrmr2") %>%
-  read_csv %>%
+                         package = "mrmr2") |>
+  read_csv |>
   filter(capture_animal_state != 'dead')
 surveys <- system.file("extdata", 
                        "equid-surveys.csv", 
-                       package = "mrmr2") %>%
+                       package = "mrmr2") |>
   read_csv
 removals <- system.file("extdata", 
                         "equid-removals.csv", 
-                         package = "mrmr2") %>%
+                         package = "mrmr2") |>
   read_csv
 
 d <- clean_data(captures, surveys, removals = removals)

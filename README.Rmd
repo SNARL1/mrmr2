@@ -15,8 +15,7 @@ knitr::opts_chunk$set(
 ![build status](https://github.com/SNARL1/mrmr2/workflows/R-CMD-check/badge.svg)
 
 This package automates common data processing steps for mark recapture data,
-with an emphasis on data collected by folks at the Sierra Nevada Aquatic
-Research Lab (SNARL).
+with an emphasis on data collected by researchers in the [`Mountain Lakes Research Group`](https://mountainlakesresearch.com) (University of California, Sierra Nevada Aquatic Research Laboratory).
 Many of the assumptions made in the data processing and modeling are pinned to
 the type of capture-recapture data collected by the SNARL team, and as a result,
 this package should not be thought of as a general purpose mark-recapture
@@ -51,7 +50,7 @@ draws only for the individuals it needs, keeping memory use low even for
 sites with a large augmented superpopulation.
 
 For an in-depth look at how to use these functions, see the vignette
-[An Introduction to mrmr2](https://snarl1.github.io/mrmr2/articles/intro-to-mrmr.html).
+[An Introduction to mrmr2](https://snarl1.github.io/mrmr2/articles/intro-to-mrmr2.html). Additional details on the new functionality added to mrmr2 is provided in [An Introduction to CMR Analysis Using the mrmr and mrmr2 Packages](https://github.com/SNARL1/mrmr-revisited/introdution-tocme-with-mrmr.html). 
 
 ## Background
 
