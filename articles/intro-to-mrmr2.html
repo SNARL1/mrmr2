@@ -338,6 +338,157 @@ observations of individuals include “detected” and “not detected”. We
 assume that individuals that are in the “not recruited” or “dead” states
 are never detected (i.e., there are no mistakes in the individual PIT
 tag ID records).</p>
+<p>For reference, the parameters estimated by the model are as
+follows:</p>
+<table class="table">
+<colgroup>
+<col width="19%">
+<col width="19%">
+<col width="19%">
+<col width="42%">
+</colgroup>
+<thead><tr class="header">
+<th>Parameter</th>
+<th>Symbol</th>
+<th>Model</th>
+<th>Definition</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>alpha_lambda</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>α</mi><mi>λ</mi></msub><annotation encoding="application/x-tex">\alpha_\lambda</annotation></semantics></math></td>
+<td>all</td>
+<td>Intercept of per-primary-period recruitment probability, on the
+logit scale</td>
+</tr>
+<tr class="even">
+<td><code>sigma_lambda</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>λ</mi></msub><annotation encoding="application/x-tex">\sigma_\lambda</annotation></semantics></math></td>
+<td>all</td>
+<td>Standard deviation of the recruitment random effect
+(<code>eps_lambda</code>) across primary periods</td>
+</tr>
+<tr class="odd">
+<td><code>eps_lambda</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mi>λ</mi></msub><annotation encoding="application/x-tex">\epsilon_\lambda</annotation></semantics></math></td>
+<td>all</td>
+<td>Standardized per-primary-period random effect on recruitment
+probability</td>
+</tr>
+<tr class="even">
+<td><code>lambda</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math></td>
+<td>all</td>
+<td>Probability that an as-yet-unrecruited individual is recruited
+during a given primary period</td>
+</tr>
+<tr class="odd">
+<td><code>beta_phi</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mi>ϕ</mi></msub><annotation encoding="application/x-tex">\beta_\phi</annotation></semantics></math></td>
+<td>all</td>
+<td>Coefficients (intercept and any survival covariates) for survival
+probability, on the logit scale</td>
+</tr>
+<tr class="even">
+<td><code>sigma_phi</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>ϕ</mi></msub><annotation encoding="application/x-tex">\sigma_\phi</annotation></semantics></math></td>
+<td>all</td>
+<td>Standard deviation of the survival random effect
+(<code>eps_phi</code>) across primary periods</td>
+</tr>
+<tr class="odd">
+<td><code>eps_phi</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mi>ϕ</mi></msub><annotation encoding="application/x-tex">\epsilon_\phi</annotation></semantics></math></td>
+<td>all</td>
+<td>Per-primary-period random effect on survival probability</td>
+</tr>
+<tr class="even">
+<td><code>phi</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math></td>
+<td>all</td>
+<td>Probability that an alive individual survives from one primary
+period to the next</td>
+</tr>
+<tr class="odd">
+<td><code>beta_detect</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mi>p</mi></msub><annotation encoding="application/x-tex">\beta_p</annotation></semantics></math></td>
+<td>all</td>
+<td>Coefficients (intercept and any detection covariates) for detection
+probability, on the logit scale</td>
+</tr>
+<tr class="even">
+<td><code>sigma_detect_period</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">period</mtext></mrow></msub><annotation encoding="application/x-tex">\sigma_{p,\text{period}}</annotation></semantics></math></td>
+<td><code>detect_re</code></td>
+<td>Standard deviation of the between-primary-period detection random
+effect (<code>eps_detect_period</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>eps_detect_period</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">period</mtext></mrow></msub><annotation encoding="application/x-tex">\epsilon_{p,\text{period}}</annotation></semantics></math></td>
+<td><code>detect_re</code></td>
+<td>Per-primary-period random effect on detection probability, shared by
+all surveys in that period</td>
+</tr>
+<tr class="even">
+<td><code>sigma_detect_occasion</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">occasion</mtext></mrow></msub><annotation encoding="application/x-tex">\sigma_{p,\text{occasion}}</annotation></semantics></math></td>
+<td><code>detect_re</code></td>
+<td>Standard deviation of the within-primary-period (per-survey)
+detection random effect (<code>eps_detect_occasion</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>eps_detect_occasion</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">occasion</mtext></mrow></msub><annotation encoding="application/x-tex">\epsilon_{p,\text{occasion}}</annotation></semantics></math></td>
+<td><code>detect_re</code></td>
+<td>Per-survey random effect on detection probability, nested within
+primary period</td>
+</tr>
+<tr class="even">
+<td><code>sigma_detect_indiv</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">indiv</mtext></mrow></msub><annotation encoding="application/x-tex">\sigma_{p,\text{indiv}}</annotation></semantics></math></td>
+<td><code>indiv_re</code></td>
+<td>Standard deviation of the individual-level detection random effect
+(<code>eps_detect_indiv</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>eps_detect_indiv</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">indiv</mtext></mrow></msub><annotation encoding="application/x-tex">\epsilon_{p,\text{indiv}}</annotation></semantics></math></td>
+<td><code>indiv_re</code></td>
+<td>Per-individual random effect on detection probability (individual
+detection heterogeneity,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>h</mi></msub><annotation encoding="application/x-tex">M_h</annotation></semantics></math>)</td>
+</tr>
+<tr class="even">
+<td><code>s</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi><annotation encoding="application/x-tex">s</annotation></semantics></math></td>
+<td>all</td>
+<td>Latent state of each individual (not yet recruited, alive, or dead)
+in each primary period</td>
+</tr>
+<tr class="odd">
+<td><code>N</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math></td>
+<td>all</td>
+<td>Estimated population size (number of “alive” individuals) in each
+primary period</td>
+</tr>
+<tr class="even">
+<td><code>B</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math></td>
+<td>all</td>
+<td>Estimated number of newly recruited individuals in each primary
+period</td>
+</tr>
+<tr class="odd">
+<td><code>Nsuper</code></td>
+<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>N</mi><mrow><mi>s</mi><mi>u</mi><mi>p</mi><mi>e</mi><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">N_{super}</annotation></semantics></math></td>
+<td>all</td>
+<td>Estimated superpopulation size: the total number of individuals ever
+alive during the study</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="model-fitting">Model fitting<a class="anchor" aria-label="anchor" href="#model-fitting"></a>
@@ -348,9 +499,9 @@ random effects to account for variation in survival and recruitment
 through time. It is also possible to add random effects to account for
 <a href="#detection-re">variation in detection</a> at the period,
 occasion, and individual level.</p>
-<p>The default number of chains is 4. Generally at least 1000 warmup and
-1000 sampling iterations should be used; the example model below uses
-only 10 iterations of each to ensure a short run time.</p>
+<p>The default number of chains is 4. Generally, at least 1000 warmup
+and 1000 sampling iterations should be used; the example model below
+uses only 10 iterations of each to ensure a short run time.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
@@ -358,22 +509,27 @@ only 10 iterations of each to ensure a short run time.</p>
 <span>  iter_warmup <span class="op">=</span> <span class="fl">10</span>, </span>
 <span>  iter_sampling <span class="op">=</span> <span class="fl">10</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>To use within-chain parallelization, provide the following additional
-arguments:</p>
+<p>To reduce <code><a href="../reference/fit_model.html">mrmr2::fit_model()</a></code> run times, use within-chain
+parallelization by providing the following additional arguments:</p>
 <ul>
 <li>
 <code>cpp_options = list(stan_threads = TRUE)</code> which compiles
-the model with threading support</li>
+the model with threading support.</li>
+<li>
+<code>parallel_chains</code> specifies the number of chains to run
+in parallel, and must be
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>≤</mo><annotation encoding="application/x-tex">\le</annotation></semantics></math>
+the number of chains.</li>
 <li>
 <code>threads_per_chain</code> set to some integer value &gt; 1. To
-allow the run to finish as quickly as possible, set this to a value that
-ensures that all physical cores are being used. The number of
-parallel_chains × threads_per_chain must equal the number of physical
-cores available. For example, on a machine with 8 physical cores,
-specify 4 chains, 4 parallel chains, and 2 threads per chain. On a
-machine with 16 physical cores, specify 4 chains, 4 parallel chains, and
-4 threads per chain. In the following code chunk, threads per chain is
-set automatically.</li>
+minimize run times, set this to a value that ensures that all physical
+cores are being used. The number of parallel_chains × threads_per_chain
+must equal the number of physical cores available. For example, on a
+machine with 8 physical cores, specify 4 chains, 4 parallel chains, and
+2 threads per chain. On a machine with 16 physical cores, specify 4
+chains, 4 parallel chains, and 4 threads per chain. In the following
+code chunk, threads per chain is set automatically based on the number
+of cores available.</li>
 </ul>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span></span>
@@ -414,7 +570,7 @@ of convergence (Rhat values
 </h4>
 <p>By default (<code>model = "base"</code>), detection probability is a
 purely deterministic function of any covariates supplied via
-<code>capture_formula</code> to <code><a href="../reference/clean_data.html">clean_data()</a></code> — with the
+<code>capture_formula</code> to <code><a href="../reference/clean_data.html">clean_data()</a></code>. With the
 default <code>capture_formula = ~ 1</code>, every survey in the dataset
 shares one scalar detection probability. Survival and recruitment, by
 contrast, already have a random effect that lets them vary by primary
@@ -432,19 +588,21 @@ detectability drifts across periods or survey occasions — it has little
 effect on the point estimates themselves.</li>
 <li>
 <code>model = "indiv_re"</code> adds an individual-level random
-effect, so that some individuals can be persistently harder to detect
-than others (e.g., due to body size, behavior, or microhabitat use).
-Unlike <code>"detect_re"</code>, ignoring real individual heterogeneity
-of this kind causes a genuine <em>negative bias</em> in point estimates
-of <code>N</code> — chronically hard-to-detect individuals get
-undercounted — matching classical closed-population heterogeneity
-(<code>M_h</code>) theory.</li>
+effect to account for some individuals being persistently harder to
+detect than others (e.g., due to body size, behavior, or microhabitat
+use). Unlike <code>"detect_re"</code>, ignoring real individual
+heterogeneity of this kind causes a genuine <em>negative bias</em> in
+point estimates of <code>N</code> — chronically hard-to-detect
+individuals get undercounted — matching classical closed-population
+heterogeneity (<code>M_h</code>) theory.</li>
 </ul>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod_indiv_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  model <span class="op">=</span> <span class="st">"indiv_re"</span>,</span>
 <span>  parallel_chains <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  threads_per_chain <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%/%</a></span> <span class="fl">4</span><span class="op">)</span>, </span>
+<span>  cpp_options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>stan_threads <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>  iter_warmup <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  iter_sampling <span class="op">=</span> <span class="fl">1000</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -466,16 +624,16 @@ attribute some of what is really per-survey
 (<code>sigma_detect_occasion</code>) noise to the between-period term
 (<code>sigma_detect_period</code>) instead, purely because a small
 sample of occasion-level draws can look like a period-level shift by
-chance. Before concluding there is genuine period-to-period drift in
+chance. Before concluding there is genuine period-to-period variation in
 detectability, compare the posterior for
 <code>sigma_detect_period</code> against the noise floor it would show
 even with no real period effect, roughly
 <code>sigma_detect_occasion / sqrt(J)</code>, where <code>J</code> is
-the number of secondary surveys in a primary period. This labeling
-ambiguity doesn’t bias <code>N</code>, <code>B</code>, <code>phi</code>,
-or <code>lambda</code> — those depend only on the sum of the two random
-effects — but it does mean the two <code>sigma</code> estimates
-shouldn’t be read in isolation.</p>
+the number of secondary surveys in a primary period. This between-period
+versus survey-level ambiguity doesn’t bias <code>N</code>,
+<code>B</code>, <code>phi</code>, or <code>lambda</code> — those depend
+only on the sum of the two random effects — but it does mean the two
+<code>sigma</code> estimates shouldn’t be read in isolation.</p>
 </div>
 </div>
 <div class="section level3">
