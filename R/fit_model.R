@@ -104,6 +104,10 @@ fit_model <- function(
   window = NULL,
   fixed_param = FALSE,
   show_messages = TRUE,
+  show_exceptions = TRUE,
+  diagnostics = c("divergences", "treedepth", "ebfmi"),
+  save_metric = getOption("cmdstanr_save_metric", FALSE),
+  save_cmdstan_config = getOption("cmdstanr_save_config", FALSE),
   compile = TRUE,
   ...
   ) {
@@ -129,7 +133,7 @@ fit_model <- function(
     adapt_delta <- 0.95
   }
 
-  stan_model <- cmdstanr::cmdstan_model(stan_file, ...)
+  stan_model <- cmdstanr::cmdstan_model(stan_file, compile = compile, ...)
 
   m_fit <- stan_model$sample(
     data = data$stan_d,
@@ -160,7 +164,11 @@ fit_model <- function(
     term_buffer = term_buffer,
     window = window,
     fixed_param = fixed_param,
-    show_messages = show_messages
+    show_messages = show_messages,
+    show_exceptions = show_exceptions,
+    diagnostics = diagnostics,
+    save_metric = save_metric,
+    save_cmdstan_config = save_cmdstan_config
   )
 
   # Load all the data and return the whole unserialized fit object:

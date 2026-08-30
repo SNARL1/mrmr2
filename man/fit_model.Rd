@@ -35,6 +35,10 @@ fit_model(
   window = NULL,
   fixed_param = FALSE,
   show_messages = TRUE,
+  show_exceptions = TRUE,
+  diagnostics = c("divergences", "treedepth", "ebfmi"),
+  save_metric = getOption("cmdstanr_save_metric", FALSE),
+  save_cmdstan_config = getOption("cmdstanr_save_config", FALSE),
   compile = TRUE,
   ...
 )
@@ -260,6 +264,44 @@ is mandatory if the parameters block is empty.}
 during the execution process, such as iteration numbers and elapsed times.
 If the output is silenced then the \code{\link[cmdstanr:fit-method-output]{$output()}} method
 of the resulting fit object can be used to display the silenced messages.}
+
+\item{show_exceptions}{(logical) When \code{TRUE} (the default), prints all
+informational messages, for example rejection of the current proposal.
+Disable if you wish to silence these messages, but this is not usually
+recommended unless you are very confident that the model is correct up to
+numerical error. If the messages are silenced then the
+\code{\link[cmdstanr:fit-method-output]{$output()}} method of the resulting fit object can be
+used to display the silenced messages.}
+
+\item{diagnostics}{(character vector) The diagnostics to automatically check
+and warn about after sampling. Setting this to an empty string \code{""} or
+\code{NULL} can be used to prevent CmdStanR from automatically reading in the
+sampler diagnostics from CSV if you wish to manually read in the results
+and validate them yourself, for example using \code{\link[cmdstanr:read_cmdstan_csv]{read_cmdstan_csv()}}. The
+currently available diagnostics are \code{"divergences"}, \code{"treedepth"}, and
+\code{"ebfmi"} (the default is to check all of them).
+
+These diagnostics are also available after fitting. The
+\code{\link[cmdstanr:fit-method-sampler_diagnostics]{$sampler_diagnostics()}} method provides
+access to the diagnostic values for each iteration and the
+\code{\link[cmdstanr:fit-method-diagnostic_summary]{$diagnostic_summary()}} method provides
+summaries of the diagnostics and can regenerate the warning messages.
+
+Diagnostics like R-hat and effective sample size are \emph{not} currently
+available via the \code{diagnostics} argument but can be checked after fitting
+using the \code{\link[cmdstanr:fit-method-summary]{$summary()}} method.}
+
+\item{save_metric}{(logical) When \code{TRUE}, call CmdStan with
+argument \code{"adaptation save_metric=1"} to save the adapted metric in
+a separate JSON file with elements \code{"stepsize"}, \code{"metric_type"} and
+\code{"inv_metric"}. The default is \code{FALSE} but can be set to \code{TRUE} for an
+entire \R session by \code{options(cmdstanr_save_metric = TRUE)}.}
+
+\item{save_cmdstan_config}{(logical) When \code{TRUE}, call CmdStan with argument
+\code{"output save_config=1"} to save a JSON file which contains the argument
+tree and extra information (equivalent to the output CSV file header). The
+default is \code{FALSE} but can be set to \code{TRUE} for an entire \R session by
+\code{options(cmdstanr_save_config = TRUE)}.}
 
 \item{compile}{(logical) Do compilation? The default is \code{TRUE}. If \code{FALSE}
 compilation can be done later via the \code{\link[cmdstanr:model-method-compile]{$compile()}}
