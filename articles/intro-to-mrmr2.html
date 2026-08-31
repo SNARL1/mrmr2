@@ -140,7 +140,9 @@ and <code>removal</code>, but any names are acceptable.</p>
 <span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://readr.tidyverse.org" class="external-link">readr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mrmr2</span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mrmr2</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">capture</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
@@ -424,12 +426,25 @@ recruited” or “dead” states are never detected (i.e., there are no
 mistakes in the individual PIT tag ID records).</p>
 <p>For reference, the parameters estimated by the model are as
 follows:</p>
+<style>
+.param-table table {
+  table-layout: fixed;
+  width: 100%;
+}
+.param-table col:nth-child(2), .param-table col:nth-child(3) {
+  width: 8%;
+}
+.param-table col:nth-child(4) {
+  width: 55%;
+}
+</style>
+<div class="param-table">
 <table class="table">
 <colgroup>
-<col width="23%">
-<col width="23%">
-<col width="23%">
-<col width="29%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
 </colgroup>
 <thead><tr class="header">
 <th>Parameter</th>
@@ -574,6 +589,7 @@ alive during the study</td>
 </tbody>
 </table>
 </div>
+</div>
 <div class="section level3">
 <h3 id="model-fitting">Model fitting<a class="anchor" aria-label="anchor" href="#model-fitting"></a>
 </h3>
@@ -616,7 +632,7 @@ per chain is set automatically based on the number of cores
 available.</li>
 </ul>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># WARNING: This model run takes approximately 30 minutes</span></span>
+<code class="sourceCode R"><span><span class="co"># WARNING: This model run takes 10-20 minutes</span></span>
 <span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
 <span>  chains <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -634,19 +650,11 @@ of the limited number of iterations, its traceplots and Rhat values are
 not informative. To provide more useful diagnostics, the traceplots and
 Rhat table below are based on <code>mod</code> from the
 <code>fit-model-threaded</code> code chunk. To avoid this code chunk’s
-approximately 20 minute run time, a slightly modified version of the
-code was pre-run and the saved model fit was used to create the
-traceplots and Rhat table.</p>
+10-20 minute run time, a slightly modified version of the code was
+pre-run and the saved model fit was used to create the traceplots and
+Rhat table.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pars_to_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'alpha_lambda'</span>,</span>
-<span>                  <span class="st">'sigma_lambda'</span>,</span>
-<span>                  <span class="st">'beta_phi'</span>,</span>
-<span>                  <span class="st">'sigma_phi'</span>,</span>
-<span>                  <span class="st">'beta_detect'</span><span class="op">)</span></span>
-<span><span class="va">draws_for_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"traceplot-draws-example.rds"</span>, package <span class="op">=</span> <span class="st">"mrmr2"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">bayesplot</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/bayesplot/reference/MCMC-traces.html" class="external-link">mcmc_trace</a></span><span class="op">(</span><span class="va">draws_for_plot</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">bayesplot</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/bayesplot/reference/MCMC-traces.html" class="external-link">mcmc_trace</a></span><span class="op">(</span><span class="va">draws_for_plot</span><span class="op">)</span></span></code></pre></div>
 <p><img src="intro-to-mrmr2_files/figure-html/plot-traceplots-prerun-1.png" class="r-plt" alt="" width="672"></p>
 <p>Signs of potential lack of convergence include any moments (like mean
 or standard deviation) changing over time, and high within-chain
@@ -761,6 +769,10 @@ versus survey-level ambiguity doesn’t bias <code>N</code>,
 <code>B</code>, <code>phi</code>, or <code>lambda</code> — those depend
 only on the sum of the two random effects — but it does mean the two
 <code>sigma</code> estimates shouldn’t be read in isolation.</p>
+<p>Additional details about the <code>detect_re</code> and
+<code>indiv_re</code> models, including runs with simulated and real
+data, are provided in <a href="https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd" class="external-link">An
+Introduction to CMR Analysis Using the mrmr and mrmr2 Packages</a>.</p>
 </div>
 </div>
 <div class="section level3">
@@ -785,20 +797,46 @@ by the model (behavior of <code>what = 'survival'</code> in
 <code>mrmr</code>). On sites with a large superpopulation relative to
 the number of translocated individuals, this keeps memory use for this
 plot far below what it would be if the full <code>s</code> array were
-pulled and then filtered down afterward.</p>
+pulled and then filtered down afterward (see <a href="https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd" class="external-link">An
+Introduction to CMR Analysis Using the mrmr and mrmr2 Packages</a> for
+details).</p>
 </div>
 <div class="section level3">
 <h3 id="custom-visualizations">Custom visualizations<a class="anchor" aria-label="anchor" href="#custom-visualizations"></a>
 </h3>
+<p>The default plots can be customized using standard plotting
+functions:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">"abundance"</span><span class="op">)</span> </span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="va">p1</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"A. Population size"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"Number of adults"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expand_limits.html" class="external-link">expand_limits</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span>  </span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">"recruitment"</span><span class="op">)</span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="va">p2</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"B. Recruitment"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"Number of adults"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">"survival"</span><span class="op">)</span></span>
+<span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="va">p3</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"C. Survival of Translocated Cohorts"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"Number of adults"</span><span class="op">)</span></span>
+<span>  </span>
+<span><span class="va">p1</span> <span class="op">/</span> <span class="va">p2</span> <span class="op">/</span><span class="va">p3</span></span></code></pre></div>
+<p><img src="intro-to-mrmr2_files/figure-html/plots-custom-1.png" class="r-plt" alt="" width="672"></p>
+<p>To save the custom plots (.png, .pdf, etc.):</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="st">"custom_plots.png"</span>, height <span class="op">=</span> <span class="fl">6.5</span>, width <span class="op">=</span> <span class="fl">6.5</span><span class="op">)</span></span></code></pre></div>
+<div class="section level4">
+<h4 id="plotting-other-parameters">Plotting other parameters<a class="anchor" aria-label="anchor" href="#plotting-other-parameters"></a>
+</h4>
 <p>Any of the plotting functionality that you would expect from a
-<code>stanfit</code> model is available as well, by accessing the
+<code>stanfit</code> model is available, by accessing the
 <code>m_fit</code> list element from a model object. For example, we
 could assess the posterior for the superpopulation size:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">bayesplot</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/bayesplot/reference/MCMC-traces.html" class="external-link">mcmc_trace</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">m_fit</span><span class="op">$</span><span class="fu">draws</span><span class="op">(</span><span class="st">"Nsuper"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="intro-to-mrmr2_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="672"></p>
 <p>See <a href="#model-structure">Model structure</a> for parameter
 names and definitions.</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="translocationreintroduction-survival-tables">Translocation/reintroduction survival tables<a class="anchor" aria-label="anchor" href="#translocationreintroduction-survival-tables"></a>
@@ -806,7 +844,7 @@ names and definitions.</p>
 <p>If individuals were added to sites, you can generate a table of
 estimated survival through time for each cohort (release date) as a
 function of years since introduction:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_table.html">survival_table</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 5</span></span></span>
 <span><span class="co">#&gt;   years_since_introduction release_date lo_survival median_survival hi_survival</span></span>
@@ -820,7 +858,7 @@ function of years since introduction:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                        4 2014-06-28        0.07            0.08        0.090<span style="text-decoration: underline;">2</span></span></span></code></pre></div>
 <p>You can also get estimates of survival through time by individual or
 cohort:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_table.html">survival_table</a></span><span class="op">(</span><span class="va">mod</span>, by_cohort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 5</span></span></span>
 <span><span class="co">#&gt;   years_since_introduction release_date lo_survival median_survival hi_survival</span></span>
@@ -832,7 +870,7 @@ cohort:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                        2 2014-06-28        0.17            0.175       0.185 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                        3 2014-06-28        0.086<span style="text-decoration: underline;">7</span>          0.093<span style="text-decoration: underline;">3</span>      0.107 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                        4 2014-06-28        0.07            0.08        0.090<span style="text-decoration: underline;">2</span></span></span></code></pre></div>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_table.html">survival_table</a></span><span class="op">(</span><span class="va">mod</span>, by_individual <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 310 × 6</span></span></span>
 <span><span class="co">#&gt;    years_since_introduction release_date pit_tag_id  lo_survival median_survival</span></span>
