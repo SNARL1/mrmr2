@@ -71,6 +71,8 @@ library(dplyr)
 library(readr)
 library(tibble)
 library(mrmr2)
+library(ggplot2)
+library(patchwork)
 ```
 
 ```{r show-capture-data}
@@ -297,8 +299,24 @@ mistakes in the individual PIT tag ID records).
 
 For reference, the parameters estimated by the model are as follows:
 
+```{=html}
+<style>
+.param-table table {
+  table-layout: fixed;
+  width: 100%;
+}
+.param-table col:nth-child(2), .param-table col:nth-child(3) {
+  width: 8%;
+}
+.param-table col:nth-child(4) {
+  width: 55%;
+}
+</style>
+```
+
+::: param-table
 | Parameter | Symbol | Model | Definition |
-|-----------------|-----------------|-----------------|---------------------|
+|----|----|----|----|
 | `alpha_lambda` | $\alpha_\lambda$ | all | Intercept of per-primary-period recruitment probability, on the logit scale |
 | `sigma_lambda` | $\sigma_\lambda$ | all | Standard deviation of the recruitment random effect (`eps_lambda`) across primary periods |
 | `eps_lambda` | $\epsilon_\lambda$ | all | Standardized per-primary-period random effect on recruitment probability |
@@ -318,6 +336,7 @@ For reference, the parameters estimated by the model are as follows:
 | `N` | $N$ | all | Estimated population size (number of "alive" individuals) in each primary period |
 | `B` | $B$ | all | Estimated number of newly recruited individuals in each primary period |
 | `Nsuper` | $N_{super}$ | all | Estimated superpopulation size: the total number of individuals ever alive during the study |
+:::
 
 ## Model fitting
 
@@ -358,7 +377,7 @@ parallelization by providing the following additional arguments:
   automatically based on the number of cores available.
 
 ```{r fit-model-threaded, message=FALSE, warning=FALSE, eval=FALSE}
-# WARNING: This model run takes approximately 30 minutes
+# WARNING: This model run takes 10-20 minutes
 mod <- fit_model(
   data = data, 
   chains = 4,
@@ -377,19 +396,47 @@ vignette's build fast. As a result of the limited number of iterations,
 its traceplots and Rhat values are not informative. To provide more
 useful diagnostics, the traceplots and Rhat table below are based on
 `mod` from the `fit-model-threaded` code chunk. To avoid this code
-chunk's approximately 20 minute run time, a slightly modified version of
-the code was pre-run and the saved model fit was used to create the
-traceplots and Rhat table.
+chunk's 10-20 minute run time, a slightly modified version of the code
+was pre-run and the saved model fit was used to create the traceplots
+and Rhat table.
 
-```{r plot-traceplots-prerun}
+```{r regenerate-traceplot-cache, include=FALSE, message=FALSE, warning=FALSE}
+# Maintainer-only setup chunk, hidden from the rendered vignette. It
+# creates `draws_for_plot`, used by the plot-traceplots-prerun and
+# print-model-prerun chunks below, from a cached RDS file.
+#
+# To refresh that cache (e.g., after the example data or the Stan model
+# change), delete inst/extdata/traceplot-draws-example.rds and re-knit
+# this vignette from the package source tree (e.g., RStudio Knit button). 
+# This chunk will then re-fit the model with the same settings shown in the
+# fit-model-threaded chunk above (~20 minutes) and re-save the cache;
+# if the file is already present, re-fitting is skipped and the cache
+# just loads (fast, as in a normal build).
 pars_to_plot <- c('alpha_lambda',
                   'sigma_lambda',
                   'beta_phi',
                   'sigma_phi',
                   'beta_detect')
-draws_for_plot <- readRDS(
-  system.file("extdata", "traceplot-draws-example.rds", package = "mrmr2")
-)
+
+cache_path <- "../inst/extdata/traceplot-draws-example.rds"
+
+if (!file.exists(cache_path)) {
+  cache_mod <- fit_model(
+    data = data,
+    chains = 4,
+    parallel_chains = 4,
+    threads_per_chain = max(1, parallel::detectCores() %/% 4),
+    cpp_options = list(stan_threads = TRUE),
+    iter_warmup = 1000,
+    iter_sampling = 1000
+  )
+  saveRDS(cache_mod$m_fit$draws(pars_to_plot), cache_path)
+}
+
+draws_for_plot <- readRDS(cache_path)
+```
+
+```{r plot-traceplots-prerun}
 bayesplot::mcmc_trace(draws_for_plot)
 ```
 
@@ -490,6 +537,11 @@ survey-level ambiguity doesn't bias `N`, `B`, `phi`, or `lambda` — those
 depend only on the sum of the two random effects — but it does mean the
 two `sigma` estimates shouldn't be read in isolation.
 
+Additional details about the `detect_re` and `indiv_re` models,
+including runs with simulated and real data, are provided in [An
+Introduction to CMR Analysis Using the mrmr and mrmr2
+Packages](https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd).
+
 ## Built-in visualizations
 
 Time series of abundance, recruitment, and survival of introduced
@@ -513,16 +565,46 @@ data-augmented pseudo-individual) tracked by the model (behavior of
 `what = 'survival'` in `mrmr`). On sites with a large superpopulation
 relative to the number of translocated individuals, this keeps memory
 use for this plot far below what it would be if the full `s` array were
-pulled and then filtered down afterward.
+pulled and then filtered down afterward (see [An Introduction to CMR
+Analysis Using the mrmr and mrmr2
+Packages](https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd)
+for details).
 
 ## Custom visualizations
 
+The default plots can be customized using standard plotting functions:
+
+```{r plots-custom, fig.height=7, fig.width=7}
+p1 <- plot_model(mod, what = "abundance") 
+p1 <- p1 + ggtitle("A. Population size") +
+    ylab("Number of adults") + 
+    expand_limits(y = 0)
+  
+p2 <- plot_model(mod, what = "recruitment")
+p2 <- p2 + ggtitle("B. Recruitment") +
+    ylab("Number of adults")
+
+p3 <- plot_model(mod, what = "survival")
+p3 <- p3 + ggtitle("C. Survival of Translocated Cohorts") +
+  ylab("Number of adults")
+  
+p1 / p2 /p3
+```
+
+To save the custom plots (.png, .pdf, etc.):
+
+```{r save-plot, eval=FALSE}
+ggsave("custom_plots.png", height = 6.5, width = 6.5)
+```
+
+### Plotting other parameters
+
 Any of the plotting functionality that you would expect from a `stanfit`
-model is available as well, by accessing the `m_fit` list element from a
-model object. For example, we could assess the posterior for the
+model is available, by accessing the `m_fit` list element from a model
+object. For example, we could assess the posterior for the
 superpopulation size:
 
-```{r}
+```{r plot-nsuper, eval=FALSE}
 bayesplot::mcmc_trace(mod$m_fit$draws("Nsuper"))
 ```
 
