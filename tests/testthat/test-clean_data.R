@@ -56,17 +56,30 @@ test_that("providing a name in survival_fill_value w/out column match error", {
 })
 
 test_that("survival_fill_value fills values in the capture columns", {
-  d <- clean_data(captures = captures, surveys = surveys,
+  # capture-example.csv has no treatment column of its own (treatment lives
+  # in additions instead), so add a synthetic one here to test the
+  # captures-only code path. Assign per pit_tag_id (not per row) since a
+  # survival covariate must be fixed for each individual over the study.
+  set.seed(42)
+  unique_ids <- unique(captures$pit_tag_id)
+  treatment_lookup <- tibble(
+    pit_tag_id = unique_ids,
+    treatment = sample(c("treated", NA), length(unique_ids), replace = TRUE)
+  )
+  captures_with_treatment <- captures %>%
+    left_join(treatment_lookup, by = "pit_tag_id")
+
+  d <- clean_data(captures = captures_with_treatment, surveys = surveys,
                   survival_formula = ~ treatment,
                   survival_fill_value = c(treatment = "filled_value"))
-  pr_na_in_data <- captures %>%
+  pr_na_in_data <- captures_with_treatment %>%
     distinct(pit_tag_id, treatment) %>%
     summarize(mean(is.na(treatment))) %>%
     unlist %>%
     as.numeric
 
   pr_filled_in_cleaned_data <- d$survival_covariate_df %>%
-    filter(pit_tag_id %in% captures$pit_tag_id) %>%
+    filter(pit_tag_id %in% captures_with_treatment$pit_tag_id) %>%
     summarize(mean(treatment == "filled_value")) %>%
     unlist %>%
     as.numeric
@@ -81,9 +94,15 @@ test_that("survival_fill_value fills values in the addition columns", {
                   survival_formula = ~ treatment,
                   survival_fill_value = c(treatment = "filled_value"))
 
-  individuals <- additions %>%
-    distinct(pit_tag_id, treatment) %>%
-    full_join(distinct(captures, pit_tag_id, treatment))
+  # captures has no treatment column at all, so any real (non-augmented)
+  # individual not found in additions should get the fill value
+  individuals <- d$survival_covariate_df %>%
+    filter(!grepl("^aug", pit_tag_id)) %>%
+    distinct(pit_tag_id) %>%
+    left_join(additions %>%
+                mutate(pit_tag_id = as.character(pit_tag_id)) %>%
+                distinct(pit_tag_id, treatment),
+              by = "pit_tag_id")
 
   # be sure that each individual is only assigned one treatment
   expect_identical(length(unique(individuals$pit_tag_id)),

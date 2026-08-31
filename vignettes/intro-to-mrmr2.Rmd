@@ -29,6 +29,20 @@ package with optional detection-heterogeneity random effects (see
 survival plotting method, and can be installed alongside `mrmr` without
 conflict.
 
+## Install latest versions of cmdstanr, cmdstan, and mrmr packages
+
+Run only if updated versions were released since previous install
+
+```{r install-stan-mrmr-packages eval=FALSE}
+# install cmdstanr and cmdstan
+install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
+
+cmdstanr::install_cmdstan()
+
+# install mrmr
+remotes::install_github("SNARL1/mrmr")
+```
+
 # Workflow overview
 
 The typical workflow involves three steps:
@@ -42,11 +56,10 @@ The typical workflow involves three steps:
 The package comes with example data that illustrate the expected format.
 Two files are required (describing captures and surveys) and two files
 are optional (describing additions and removals). These files are
-specified in the [data processing step](#data-process) and typically
+specified in the [Data processing](#data-process) step and typically
 named something like `capture`,`survey`, `translocation`, and `removal`,
 but any names are acceptable.
 
-In the following example, we include three of the four possible files.
 The first file specifies capture data:
 
 ```{r setup}
@@ -76,7 +89,9 @@ path to a local file (real data, not the example data included in the
 package). The capture file must contain, at a minimum, `pit_tag_id` and
 `survey_date` columns, but additional columns can also be included
 (e.g., [survival covariates](#survival-covar)). Each row in this file
-represents a capture or recapture event.
+represents a capture or recapture event, and only live individuals are
+included. Any previously-tagged individuals found dead during during a
+survey can be included in the `removal` file (see below).
 
 The second file specifies survey-level data, and at a minimum it must
 contain `survey_date`, `primary_period`, and `secondary_period columns`:
@@ -123,26 +138,46 @@ Each row corresponds to a translocation event of one unique individual.
 Because some mark-recapture datasets do not include translocations or
 reintroductions, this file is optional.
 
-The fourth file (optional), specifying removals, is described in the
-[Cases with known removals](#removals) section.
+The fourth file (optional) specifies removal data and, at a minimum,
+contains, `removal_date` and `pit_tag_id` columns. Each row corresponds
+to a removal event of one unique individual. Because some mark-recapture
+datasets do not include removals, this file is optional.
+
+```{r show-remove-data}
+removal <- read_csv(
+  system.file(
+    "extdata", 
+    "removal-example.csv", 
+    package = "mrmr2"
+  )
+)
+
+glimpse(removal)
+```
 
 ## Data processing {#data-process}
 
 To load and process the data, provide the data frames as named arguments
-to the `mrmr2::clean_data()` function: `captures`, `surveys`, `additions`
-(translocations or reintroductions, optional), and `removals` (optional).
-Note that these are the names `clean_data()` requires for its arguments
--- they need not match the names you gave your own data frames, as in
-the example below, where the data frame `translocation` (a name we chose
-when reading in the file above) is passed as `clean_data()`'s `additions`
-argument. `clean_data()` determines the role of each input solely from
-these argument names, and will raise an error if any argument is passed
-positionally instead of by name:
+to the `mrmr2::clean_data()` function: `captures`, `surveys`,
+`additions` (translocations or reintroductions, optional), and
+`removals` (optional). Note that these are the names `clean_data()`
+requires for its arguments -- they need not match the names you gave
+your own data frames, as in the example below, where the data frame
+`translocation` (a name we chose when reading in the file above) is
+passed as `clean_data()`'s `additions` argument. `clean_data()`
+determines the role of each input solely from these argument names, and
+will raise an error if any argument is passed positionally instead of by
+name (e.g., `capture` instead of `captures = capture`):
 
 ```{r clean-data, message=FALSE}
 data <- clean_data(captures = capture, surveys = survey,
-                   additions = translocation)
+                   additions = translocation, removals = removal)
 ```
+
+In some cases, there may be no introductions or removals of individuals
+into/from a population. The only difference in implementation in such
+cases is that the `additions` and/or `removals` argument to
+`clean_data()` can be omitted.
 
 This function performs several data-preparation steps. It checks the
 capture, survey, and translocation/reintroduction data for common
@@ -161,47 +196,6 @@ output provides data frames as list elements, and a list element called
 `stan_d`, which contains data that has been pre-processed for model
 fitting.
 
-### Cases without translocations or reintroductions
-
-In some cases, there may be no introductions of individuals into a
-population. The only difference in implementation in such cases is that
-the `additions` argument to `clean_data()` can be omitted:
-
-```{r no-trans, message = FALSE, eval = FALSE}
-data_no_trans <- clean_data(captures = capture, surveys = survey)
-mod_no_trans <- fit_model(data_no_trans)
-```
-
-### Cases with known removals {#removals}
-
-Know removals of individuals from a population can be included as data
-to increase the precision of abundance estimates. Removals can include
-individuals collected for translocation to another site, or
-previously-tagged individuals that are found dead during a survey. An
-example dataset fitting this case is included for an imaginary site
-called "Equid". In the code chunk below, we first filter out dead
-animals from the capture history -- the `capture` data frame should only
-contain live animals (those that might survive to the next primary
-period), and include them via a `removal` data frame.
-
-```{r removals, message = FALSE, eval = FALSE}
-capture <- read_csv(system.file("extdata", 
-                        "equid-captures.csv", 
-                         package = "mrmr2")) |>
-filter(capture_animal_state != 'dead')
-
-survey <- read_csv(system.file("extdata", 
-                       "equid-surveys.csv", 
-                       package = "mrmr2"))
-
-removal <- read_csv(system.file("extdata",
-                        "equid-removals.csv",
-                         package = "mrmr2"))
-
-d <- clean_data(captures = capture, surveys = survey, removals = removal)
-m <- fit_model(d, parallel_chains = 4, chains = 4)
-```
-
 ### Including detection/non-detection covariates
 
 Survey-level covariates that might affect the probability of detection
@@ -209,42 +203,74 @@ can be included via the `capture_formula` argument to `clean_data`.
 **Note:** it is a good idea to ensure that any continuous covariates are
 rescaled prior to using them as covariates to have mean = 0 and unit
 standard deviation. This can be achieved by adding a column to the
-`captures` data Using a covariate value like `year`, which typically has
+`surveys` data. Using a covariate value like `year`, which typically has
 a mean in the thousands and a standard deviation far from one may cause
 numerical issues when fitting a model.
+
+**Note:** covariate column names must be unique across all data frames
+supplied to `clean_data()` (`captures`, `surveys`, `additions`, and
+`removals`). Internally, `clean_data()` joins these data frames together
+using all of their shared column names as the join key; if a covariate
+you add happens to share a name with a column in another data frame, it
+will unexpectedly become part of that join and can silently produce
+incorrect results.
 
 A detection covariate, such as `person_hours`, can be included as
 follows:
 
 ```{r detection-covariate, message=FALSE, eval=FALSE}
 # center and scale the covariate
-captures <- captures |>
-  mutate(c_person_hours = c(scale(person_hours)))
+survey <- survey |>
+  mutate(c_survey_duration = c(scale(survey_duration)))
 
 # specify the formula
-data <- clean_data(captures = captures, surveys = surveys,
-                   additions = translocations,
-                   capture_formula = ~ c_person_hours)
+data <- clean_data(captures = capture, surveys = survey,
+                   additions = translocation,
+                   capture_formula = ~ c_survey_duration)
 ```
 
 ### Including survival covariates {#survival-covar}
 
 Individual-level survival covariates can be included via the
-`survival_formula` and `survival_fill_value` arguments. Both of these
-arguments must be specified because covariate values for
-pseudo-individuals must be filled in (they are never observed). For
-example, to evaluate the effect of an experimental treatment, if some
-individuals belong to a "treated" group and others belong to an
-"control" group, then one of these groups must be specified as a fill
-value (e.g., "treated" or "control", depending on the experiment):
+`survival_formula` and `survival_fill_value` arguments. Any variable
+named in `survival_formula` must be a column in `captures` or
+`additions` -- these are the only two places `clean_data()` looks for
+individual-level values -- and must be fixed for each individual over
+the entire study.
+
+Both arguments must be specified together, because `survival_fill_value`
+supplies the covariate value for every individual your data says nothing
+about: the (typically numerous) augmented pseudo-individuals, which were
+never captured and so can never have a recorded value, as well as any
+real individual whose `captures`/`additions` records happen to omit the
+covariate. In other words, `survival_fill_value` should be set to
+whichever level the covariate takes on *by default*, in the absence of
+an explicit value -- not simply whichever group happens to be smaller or
+more notable.
+
+For example, suppose you want to evaluate the effect of an experiment on
+a subset of individuals. In that experiment, a treatment is applied to
+half of the individuals in the subset ("treated") and the other half are
+"untreated" controls. For individuals that were not part of the
+experiment and for pseudo-individuals, a `treatment` value is absent
+(`NA`). Because the pseudo-individuals stand in for the general
+population that might exist but was never observed, and because an
+absent value already means "untreated" for real individuals that were
+not part of the experiment, the fill value should almost always be
+"untreated":
 
 ```{r survival-covariate, message=FALSE, eval=FALSE}
 # specify the formula
 data <- clean_data(captures = captures, surveys = surveys,
                    additions = translocations,
                    survival_formula = ~ treatment,
-                   survival_fill_value = c(treatment = "treated"))
+                   survival_fill_value = c(treatment = "untreated"))
 ```
+
+Setting `survival_fill_value = c(treatment = "treated")` would only be
+appropriate in the reverse situation, where "treated" is the default for
+individuals that were not included in the experiment and for the control
+individuals.
 
 ## Model structure {#model-structure}
 
@@ -266,7 +292,7 @@ tag ID records).
 For reference, the parameters estimated by the model are as follows:
 
 | Parameter | Symbol | Model | Definition |
-|-----------------|-----------------|-----------------|----------------------|
+|------------------|------------------|------------------|------------------|
 | `alpha_lambda` | $\alpha_\lambda$ | all | Intercept of per-primary-period recruitment probability, on the logit scale |
 | `sigma_lambda` | $\sigma_\lambda$ | all | Standard deviation of the recruitment random effect (`eps_lambda`) across primary periods |
 | `eps_lambda` | $\epsilon_\lambda$ | all | Standardized per-primary-period random effect on recruitment probability |

@@ -19,6 +19,7 @@ importFrom(dplyr,
   n,
   rename,
   select,
+  slice_min,
   summarize,
   ungroup
 )

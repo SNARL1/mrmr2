@@ -75,7 +75,7 @@
 #' @export
 #' @importFrom readr read_csv parse_number
 #' @importFrom dplyr mutate group_by summarize ungroup full_join
-#'   arrange left_join select filter distinct anti_join lead n
+#'   arrange left_join select filter distinct anti_join lead n slice_min
 #' @importFrom tibble tibble
 #' @importFrom tidyr complete separate unite
 #' @importFrom reshape2 acast
@@ -175,7 +175,7 @@ clean_data <- function(...,
   surveys <- surveys |>
     mutate(primary_period = .data$primary_period + 1) |>
     group_by(.data$primary_period, .data$secondary_period) |>
-    summarize(survey_date = min(.data$survey_date)) |>
+    slice_min(.data$survey_date, n = 1, with_ties = FALSE) |>
     ungroup() |>
     mutate(year = year(.data$survey_date),
            is_overwinter = lead(.data$year) - .data$year == 1,
@@ -315,21 +315,30 @@ clean_data <- function(...,
 
   if (survival_formula_specified) {
     survival_covariate_columns <- names(survival_fill_value)
-    join_cols <- c("pit_tag_id", survival_covariate_columns)
 
     not_na <- function(x) !is.na(x)
 
-    if (any(survival_covariate_columns %in% names(captures))) {
+    # Each covariate may live in captures, additions, or both -- pull it in
+    # from whichever data frame(s) actually have it, rather than requiring
+    # every covariate to be present in every supplied data frame.
+    captures_covariate_cols <- intersect(survival_covariate_columns,
+                                         names(captures))
+    if (length(captures_covariate_cols) > 0) {
+      captures_join_cols <- c("pit_tag_id", captures_covariate_cols)
       survival_covariate_df <- survival_covariate_df |>
-        dplyr::full_join(dplyr::distinct(captures[, join_cols])) |>
-        dplyr::filter_at(survival_covariate_columns, not_na)
+        dplyr::full_join(dplyr::distinct(captures[, captures_join_cols])) |>
+        dplyr::filter_at(captures_covariate_cols, not_na)
     }
 
     if (any_additions) {
-      # read in covariate data from additions
-      survival_covariate_df <- survival_covariate_df |>
-        dplyr::full_join(dplyr::distinct(additions[, join_cols])) |>
-        dplyr::filter_at(survival_covariate_columns, not_na)
+      additions_covariate_cols <- intersect(survival_covariate_columns,
+                                            names(additions))
+      if (length(additions_covariate_cols) > 0) {
+        additions_join_cols <- c("pit_tag_id", additions_covariate_cols)
+        survival_covariate_df <- survival_covariate_df |>
+          dplyr::full_join(dplyr::distinct(additions[, additions_join_cols])) |>
+          dplyr::filter_at(additions_covariate_cols, not_na)
+      }
     }
     stopifnot(all(survival_covariate_columns %in% names(survival_covariate_df)))
 
