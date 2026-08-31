@@ -29,18 +29,21 @@ package with optional detection-heterogeneity random effects (see
 survival plotting method, and can be installed alongside `mrmr` without
 conflict.
 
-## Install latest versions of cmdstanr, cmdstan, and mrmr packages
+## Install latest versions of cmdstanr, cmdstan, and mrmr2 packages
 
-Run only if updated versions were released since previous install
+Run any time; each line below only installs/updates a package if it's
+missing or outdated -- an already up-to-date package is left alone.
 
-```{r install-stan-mrmr-packages eval=FALSE}
-# install cmdstanr and cmdstan
-install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
+```{r install-stan-mrmr2-packages, eval=FALSE}
+# install/update cmdstanr from its dedicated repository
+remotes::update_packages("cmdstanr",
+                         repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
 
+# install/update CmdStan itself (a no-op if the latest release is already installed)
 cmdstanr::install_cmdstan()
 
-# install mrmr
-remotes::install_github("SNARL1/mrmr")
+# install/update mrmr2 from GitHub (a no-op if unchanged since the last install)
+remotes::install_github("SNARL1/mrmr2")
 ```
 
 # Workflow overview
