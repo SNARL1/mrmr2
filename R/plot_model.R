@@ -81,7 +81,7 @@ plot_model <- function(model, what) {
       group_by(.data$release_date, .data$primary_period, .data$.draw) |>
       summarize(fraction_alive = mean(.data$value == 2), .groups = "drop") |>
       filter(.data$primary_period > 1) |>
-      left_join(primary_period_dates) |>
+      left_join(primary_period_dates, by = "primary_period") |>
       filter(.data$date >= .data$release_date) |>
       group_by(.data$release_date, .data$date) |>
       summarize(lo = quantile(.data$fraction_alive, .025),
