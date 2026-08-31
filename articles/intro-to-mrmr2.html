@@ -104,11 +104,14 @@ installed alongside <code>mrmr</code> without conflict.</p>
 <h3 id="data-specifications">Data specifications<a class="anchor" aria-label="anchor" href="#data-specifications"></a>
 </h3>
 <p>The package comes with example data that illustrate the expected
-format. Three files are needed. These files are typically named
-something like <code>capture</code>, <code>translocation</code>, and
-<code>survey</code>, but the files are specified in the <a href="#data-process">data processing step</a> and any names are
+format. Two files are required (describing captures and surveys) and two
+files are optional (describing additions and removals). These files are
+specified in the <a href="#data-process">data processing step</a> and
+typically named something like <code>capture</code>,<code>survey</code>,
+<code>translocation</code>, and <code>removal</code>, but any names are
 acceptable.</p>
-<p>The first file specifies capture data:</p>
+<p>In the following example, we include three of the four possible
+files. The first file specifies capture data:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -130,12 +133,13 @@ acceptable.</p>
 <span>    package <span class="op">=</span> <span class="st">"mrmr2"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="font-weight: bold;">Rows: </span><span style="color: #0000BB;">466</span> <span style="font-weight: bold;">Columns: </span><span style="color: #0000BB;">19</span></span></span>
+<span><span class="co">#&gt; <span style="font-weight: bold;">Rows: </span><span style="color: #0000BB;">466</span> <span style="font-weight: bold;">Columns: </span><span style="color: #0000BB;">8</span></span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Column specification</span> <span style="color: #00BBBB;">────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt; <span style="font-weight: bold;">Delimiter:</span> ","</span></span>
-<span><span class="co">#&gt; <span style="color: #BB0000;">chr</span>  (9): swab_id, surveyor1, pit_tag_status, frog_sex, frog_state, swabber_...</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">dbl</span>  (7): pit_tag_id, site_id, frog_weight, frog_svl, collection_location, r...</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">date</span> (3): survey_date, collection_date, release_date</span></span>
+<span><span class="co">#&gt; <span style="color: #BB0000;">chr</span>  (2): frog_sex, frog_state</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">dbl</span>  (4): pit_tag_id, site_id, frog_weight, frog_svl</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">lgl</span>  (1): tag_new</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">date</span> (1): survey_date</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Use `spec()` to retrieve the full column specification for this data.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Specify the column types or set `show_col_types = FALSE` to quiet this message.</span></span>
@@ -144,26 +148,15 @@ acceptable.</p>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">capture</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 466</span></span>
-<span><span class="co">#&gt; Columns: 19</span></span>
-<span><span class="co">#&gt; $ swab_id             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span>…</span></span>
-<span><span class="co">#&gt; $ pit_tag_id          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "900043000104502"<span style="color: #949494;">, </span>"900043000104574"<span style="color: #949494;">, </span>"90004300010…</span></span>
-<span><span class="co">#&gt; $ site_id             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>7…</span></span>
-<span><span class="co">#&gt; $ survey_date         <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-08-07<span style="color: #949494;">, </span>2015-08-16<span style="color: #949494;">, </span>2014-07-11<span style="color: #949494;">, </span>2015-08-15<span style="color: #949494;">, </span>2…</span></span>
-<span><span class="co">#&gt; $ surveyor1           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Killion"<span style="color: #949494;">, </span>"Killion"<span style="color: #949494;">, </span>"Demaranville"<span style="color: #949494;">, </span>"Lindauer"<span style="color: #949494;">, </span>…</span></span>
-<span><span class="co">#&gt; $ pit_tag_status      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span>…</span></span>
-<span><span class="co">#&gt; $ frog_sex            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "M"<span style="color: #949494;">, </span>"F"<span style="color: #949494;">, </span>"M"<span style="color: #949494;">, </span>"M"<span style="color: #949494;">, </span>"F"<span style="color: #949494;">, </span>"F"<span style="color: #949494;">, </span>"M"<span style="color: #949494;">, </span>"M"<span style="color: #949494;">, </span>"F"<span style="color: #949494;">, </span>"F"<span style="color: #949494;">, </span>…</span></span>
-<span><span class="co">#&gt; $ frog_state          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Healthy"<span style="color: #949494;">, </span>"Healthy"<span style="color: #949494;">, </span>"Healthy"<span style="color: #949494;">, </span>"Healthy"<span style="color: #949494;">, </span>"Healt…</span></span>
-<span><span class="co">#&gt; $ frog_weight         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span>…</span></span>
-<span><span class="co">#&gt; $ frog_svl            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span>…</span></span>
-<span><span class="co">#&gt; $ swabber_name        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span>…</span></span>
-<span><span class="co">#&gt; $ treatment           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "unexposed"<span style="color: #949494;">, </span>"exposed"<span style="color: #949494;">, </span>"unexposed"<span style="color: #949494;">, </span>"unexposed"<span style="color: #949494;">, </span>…</span></span>
-<span><span class="co">#&gt; $ collection_date     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-06-27<span style="color: #949494;">, </span>2014-06-23<span style="color: #949494;">, </span>2014-06-27<span style="color: #949494;">, </span>2014-06-27<span style="color: #949494;">, </span>2…</span></span>
-<span><span class="co">#&gt; $ collection_location <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 72996<span style="color: #949494;">, </span>72996<span style="color: #949494;">, </span>72996<span style="color: #949494;">, </span>72996<span style="color: #949494;">, </span>72996<span style="color: #949494;">, </span>72996<span style="color: #949494;">, </span>72996<span style="color: #949494;">, </span>7…</span></span>
-<span><span class="co">#&gt; $ release_location    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>7…</span></span>
-<span><span class="co">#&gt; $ release_date        <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-06-28<span style="color: #949494;">, </span>2014-06-28<span style="color: #949494;">, </span>2014-06-28<span style="color: #949494;">, </span>2014-06-28<span style="color: #949494;">, </span>2…</span></span>
-<span><span class="co">#&gt; $ standard_type       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span>…</span></span>
-<span><span class="co">#&gt; $ load                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span>…</span></span>
-<span><span class="co">#&gt; $ category            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "translocated"<span style="color: #949494;">, </span>"translocated"<span style="color: #949494;">, </span>"translocated"<span style="color: #949494;">, </span>"t…</span></span></code></pre></div>
+<span><span class="co">#&gt; Columns: 8</span></span>
+<span><span class="co">#&gt; $ pit_tag_id  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "900043000104502"<span style="color: #949494;">, </span>"900043000104502"<span style="color: #949494;">, </span>"900043000104502"<span style="color: #949494;">, </span>"…</span></span>
+<span><span class="co">#&gt; $ site_id     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70…</span></span>
+<span><span class="co">#&gt; $ survey_date <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-08-06<span style="color: #949494;">, </span>2014-08-07<span style="color: #949494;">, </span>2014-08-08<span style="color: #949494;">, </span>2014-09-05<span style="color: #949494;">, </span>2015-06-1…</span></span>
+<span><span class="co">#&gt; $ tag_new     <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FALSE<span style="color: #949494;">, </span>FA…</span></span>
+<span><span class="co">#&gt; $ frog_sex    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "m"<span style="color: #949494;">, </span>"m"<span style="color: #949494;">, </span>"m"<span style="color: #949494;">, </span>"m"<span style="color: #949494;">, </span>"m"<span style="color: #949494;">, </span>"m"<span style="color: #949494;">, </span>"m"<span style="color: #949494;">, </span>"m"<span style="color: #949494;">, </span>"m"<span style="color: #949494;">, </span>"m"<span style="color: #949494;">, </span>"m"<span style="color: #949494;">, </span>"m"…</span></span>
+<span><span class="co">#&gt; $ frog_state  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "healthy"<span style="color: #949494;">, </span>"healthy"<span style="color: #949494;">, </span>"healthy"<span style="color: #949494;">, </span>"healthy"<span style="color: #949494;">, </span>"healthy"<span style="color: #949494;">, </span>"he…</span></span>
+<span><span class="co">#&gt; $ frog_weight <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 16<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>13<span style="color: #949494;">, </span>15<span style="color: #949494;">, </span>15<span style="color: #949494;">, </span>16<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>18<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>23<span style="color: #949494;">, </span>25<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>10<span style="color: #949494;">, </span>13…</span></span>
+<span><span class="co">#&gt; $ frog_svl    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 51<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>43<span style="color: #949494;">, </span>51<span style="color: #949494;">, </span>53<span style="color: #949494;">, </span>56<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>56<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>56<span style="color: #949494;">, </span>60<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>50<span style="color: #949494;">, </span>50…</span></span></code></pre></div>
 <p>Note that the <code>system.file</code> function generates a path to
 the <code>capture-example.csv</code> file, but in a real application,
 you would use a path to a local file (real data, not the example data
@@ -171,10 +164,47 @@ included in the package). The capture file must contain, at a minimum,
 <code>pit_tag_id</code> and <code>survey_date</code> columns, but
 additional columns can also be included (e.g., <a href="#survival-covar">survival covariates</a>). Each row in this file
 represents a capture or recapture event.</p>
-<p>The second file specifies translocation/reintroduction data, and at a
-minimum it must contain <code>release_date</code> and
-<code>pit_tag_id</code> columns:</p>
+<p>The second file specifies survey-level data, and at a minimum it must
+contain <code>survey_date</code>, <code>primary_period</code>, and
+<code>secondary_period columns</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">survey</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
+<span>    <span class="st">"extdata"</span>, </span>
+<span>    <span class="st">"survey-example.csv"</span>, </span>
+<span>    package <span class="op">=</span> <span class="st">"mrmr2"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="font-weight: bold;">Rows: </span><span style="color: #0000BB;">51</span> <span style="font-weight: bold;">Columns: </span><span style="color: #0000BB;">4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Column specification</span> <span style="color: #00BBBB;">────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt; <span style="font-weight: bold;">Delimiter:</span> ","</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">dbl</span>  (3): primary_period, secondary_period, survey_duration</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">date</span> (1): survey_date</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Use `spec()` to retrieve the full column specification for this data.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Specify the column types or set `show_col_types = FALSE` to quiet this message.</span></span>
+<span></span>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">survey</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 51</span></span>
+<span><span class="co">#&gt; Columns: 4</span></span>
+<span><span class="co">#&gt; $ survey_date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-06-28<span style="color: #949494;">, </span>2014-07-10<span style="color: #949494;">, </span>2014-07-11<span style="color: #949494;">, </span>2014-07-12<span style="color: #949494;">, </span>2014…</span></span>
+<span><span class="co">#&gt; $ primary_period   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>4<span style="color: #949494;">, </span>4<span style="color: #949494;">, </span>4<span style="color: #949494;">, </span>5<span style="color: #949494;">, </span>5<span style="color: #949494;">, </span>5<span style="color: #949494;">, </span>6<span style="color: #949494;">, </span>6<span style="color: #949494;">, </span>6<span style="color: #949494;">, </span>7<span style="color: #949494;">, </span>7<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ secondary_period <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">,</span>…</span></span>
+<span><span class="co">#&gt; $ survey_duration  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.00<span style="color: #949494;">, </span>7.61<span style="color: #949494;">, </span>7.00<span style="color: #949494;">, </span>5.35<span style="color: #949494;">, </span>7.33<span style="color: #949494;">, </span>7.58<span style="color: #949494;">, </span>8.16<span style="color: #949494;">, </span>7.58<span style="color: #949494;">, </span>7.85<span style="color: #949494;">,</span>…</span></span></code></pre></div>
+<p>Here, each row is a unique survey. If translocations or
+reintroductions occurred at the site, these actions need to be included
+in the <code>survey</code> dataset, each as a typical survey event.
+Specifically, <code>survey_date</code> and <code>primary_period</code>
+values are provided, the <code>primary_period</code> is sequential with
+all survey records in the dataset based on <code>visit_date</code>, and
+<code>secondary_period</code> = 0. Translocations/reintroductions cannot
+occur during a primary period. Therefore, the <code>survey_date</code>
+for translocation/reintroduction records cannot overlap with the
+<code>survey_date</code> range of any primary period.</p>
+<p>The third file (optional) specifies translocation (or reintroduction)
+data, and at a minimum it must contain <code>release_date</code> and
+<code>pit_tag_id</code> columns:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">translocation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
 <span>    <span class="st">"extdata"</span>, </span>
@@ -214,52 +244,28 @@ minimum it must contain <code>release_date</code> and
 <span><span class="co">#&gt; $ load           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 432<span style="color: #949494;">, </span>247920<span style="color: #949494;">, </span>59184<span style="color: #949494;">, </span>1200<span style="color: #949494;">, </span>336<span style="color: #949494;">, </span>57744<span style="color: #949494;">, </span>8064<span style="color: #949494;">, </span>128352<span style="color: #949494;">, </span>196…</span></span></code></pre></div>
 <p>Each row corresponds to a translocation event of one unique
 individual. Because some mark-recapture datasets do not include
-translocation or reintroduction actions, this file is optional.</p>
-<p>The third file specifies survey-level data, and at a minimum it must
-contain <code>survey_date</code>, <code>primary_period</code>, and
-<code>secondary_period columns</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">survey</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
-<span>    <span class="st">"extdata"</span>, </span>
-<span>    <span class="st">"survey-example.csv"</span>, </span>
-<span>    package <span class="op">=</span> <span class="st">"mrmr2"</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="font-weight: bold;">Rows: </span><span style="color: #0000BB;">51</span> <span style="font-weight: bold;">Columns: </span><span style="color: #0000BB;">4</span></span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Column specification</span> <span style="color: #00BBBB;">────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt; <span style="font-weight: bold;">Delimiter:</span> ","</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">dbl</span>  (3): primary_period, secondary_period, survey_duration</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">date</span> (1): survey_date</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Use `spec()` to retrieve the full column specification for this data.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Specify the column types or set `show_col_types = FALSE` to quiet this message.</span></span>
-<span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">survey</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 51</span></span>
-<span><span class="co">#&gt; Columns: 4</span></span>
-<span><span class="co">#&gt; $ survey_date      <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2014-06-28<span style="color: #949494;">, </span>2014-07-10<span style="color: #949494;">, </span>2014-07-11<span style="color: #949494;">, </span>2014-07-12<span style="color: #949494;">, </span>2014…</span></span>
-<span><span class="co">#&gt; $ primary_period   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>4<span style="color: #949494;">, </span>4<span style="color: #949494;">, </span>4<span style="color: #949494;">, </span>5<span style="color: #949494;">, </span>5<span style="color: #949494;">, </span>5<span style="color: #949494;">, </span>6<span style="color: #949494;">, </span>6<span style="color: #949494;">, </span>6<span style="color: #949494;">, </span>7<span style="color: #949494;">, </span>7<span style="color: #949494;">,</span>…</span></span>
-<span><span class="co">#&gt; $ secondary_period <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">, </span>3<span style="color: #949494;">, </span>1<span style="color: #949494;">, </span>2<span style="color: #949494;">,</span>…</span></span>
-<span><span class="co">#&gt; $ survey_duration  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.00<span style="color: #949494;">, </span>7.61<span style="color: #949494;">, </span>7.00<span style="color: #949494;">, </span>5.35<span style="color: #949494;">, </span>7.33<span style="color: #949494;">, </span>7.58<span style="color: #949494;">, </span>8.16<span style="color: #949494;">, </span>7.58<span style="color: #949494;">, </span>7.85<span style="color: #949494;">,</span>…</span></span></code></pre></div>
-<p>Here, each row is a unique survey. If translocations or
-reintroductions occurred at the site, these actions need to be included
-in the <code>survey</code> dataset, each as a typical survey event.
-Specifically, <code>survey_date</code> and <code>primary_period</code>
-values are provided, the <code>primary_period</code> is sequential with
-all survey records in the dataset based on <code>visit_date</code>, and
-<code>secondary_period</code> = 0. Translocations/reintroductions cannot
-occur during a primary period. Therefore, the <code>survey_date</code>
-for translocation/reintroduction records cannot overlap with the
-<code>survey_date</code> range of any primary period.</p>
+translocations or reintroductions, this file is optional.</p>
+<p>The fourth file (optional), specifying removals, is described in the
+<a href="#removals">Cases with known removals</a> section.</p>
 </div>
 <div class="section level3">
 <h3 id="data-process">Data processing<a class="anchor" aria-label="anchor" href="#data-process"></a>
 </h3>
-<p>To load and process the data, provide paths to the data files as
-arguments to the <code><a href="../reference/clean_data.html">mrmr2::clean_data()</a></code> function:</p>
+<p>To load and process the data, provide the data frames as named
+arguments to the <code><a href="../reference/clean_data.html">mrmr2::clean_data()</a></code> function:
+<code>captures</code>, <code>surveys</code>, <code>additions</code>
+(translocations or reintroductions, optional), and <code>removals</code>
+(optional). Note that these are the names <code><a href="../reference/clean_data.html">clean_data()</a></code>
+requires for its arguments – they need not match the names you gave your
+own data frames, as in the example below, where the data frame
+<code>translocation</code> (a name we chose when reading in the file
+above) is passed as <code><a href="../reference/clean_data.html">clean_data()</a></code>’s <code>additions</code>
+argument. <code><a href="../reference/clean_data.html">clean_data()</a></code> determines the role of each input
+solely from these argument names, and will raise an error if any
+argument is passed positionally instead of by name:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span><span class="va">capture</span>, <span class="va">survey</span>, <span class="va">translocation</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">capture</span>, surveys <span class="op">=</span> <span class="va">survey</span>,</span>
+<span>                   additions <span class="op">=</span> <span class="va">translocation</span><span class="op">)</span></span></code></pre></div>
 <p>This function performs several data-preparation steps. It checks the
 capture, survey, and translocation/reintroduction data for common
 problems (e.g., duplicate records, dead animals left in the capture
@@ -279,6 +285,47 @@ sections. The output provides data frames as list elements, and a list
 element called <code>stan_d</code>, which contains data that has been
 pre-processed for model fitting.</p>
 <div class="section level4">
+<h4 id="cases-without-translocations-or-reintroductions">Cases without translocations or reintroductions<a class="anchor" aria-label="anchor" href="#cases-without-translocations-or-reintroductions"></a>
+</h4>
+<p>In some cases, there may be no introductions of individuals into a
+population. The only difference in implementation in such cases is that
+the <code>additions</code> argument to <code><a href="../reference/clean_data.html">clean_data()</a></code> can be
+omitted:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">data_no_trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">capture</span>, surveys <span class="op">=</span> <span class="va">survey</span><span class="op">)</span></span>
+<span><span class="va">mod_no_trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span><span class="va">data_no_trans</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="removals">Cases with known removals<a class="anchor" aria-label="anchor" href="#removals"></a>
+</h4>
+<p>Know removals of individuals from a population can be included as
+data to increase the precision of abundance estimates. Removals can
+include individuals collected for translocation to another site, or
+previously-tagged individuals that are found dead during a survey. An
+example dataset fitting this case is included for an imaginary site
+called “Equid”. In the code chunk below, we first filter out dead
+animals from the capture history – the <code>capture</code> data frame
+should only contain live animals (those that might survive to the next
+primary period), and include them via a <code>removal</code> data
+frame.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">capture</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, </span>
+<span>                        <span class="st">"equid-captures.csv"</span>, </span>
+<span>                         package <span class="op">=</span> <span class="st">"mrmr2"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">capture_animal_state</span> <span class="op">!=</span> <span class="st">'dead'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">survey</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, </span>
+<span>                       <span class="st">"equid-surveys.csv"</span>, </span>
+<span>                       package <span class="op">=</span> <span class="st">"mrmr2"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">removal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,</span>
+<span>                        <span class="st">"equid-removals.csv"</span>,</span>
+<span>                         package <span class="op">=</span> <span class="st">"mrmr2"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">capture</span>, surveys <span class="op">=</span> <span class="va">survey</span>, removals <span class="op">=</span> <span class="va">removal</span><span class="op">)</span></span>
+<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span><span class="va">d</span>, parallel_chains <span class="op">=</span> <span class="fl">4</span>, chains <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
 <h4 id="including-detectionnon-detection-covariates">Including detection/non-detection covariates<a class="anchor" aria-label="anchor" href="#including-detectionnon-detection-covariates"></a>
 </h4>
 <p>Survey-level covariates that might affect the probability of
@@ -292,13 +339,14 @@ the thousands and a standard deviation far from one may cause numerical
 issues when fitting a model.</p>
 <p>A detection covariate, such as <code>person_hours</code>, can be
 included as follows:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># center and scale the covariate</span></span>
 <span><span class="va">captures</span> <span class="op">&lt;-</span> <span class="va">captures</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>c_person_hours <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">person_hours</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># specify the formula</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span><span class="va">captures</span>, <span class="va">surveys</span>, <span class="va">translocations</span>,</span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">captures</span>, surveys <span class="op">=</span> <span class="va">surveys</span>,</span>
+<span>                   additions <span class="op">=</span> <span class="va">translocations</span>,</span>
 <span>                   capture_formula <span class="op">=</span> <span class="op">~</span> <span class="va">c_person_hours</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
@@ -313,10 +361,11 @@ treatment, if some individuals belong to a “treated” group and others
 belong to an “control” group, then one of these groups must be specified
 as a fill value (e.g., “treated” or “control”, depending on the
 experiment):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># specify the formula</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span><span class="va">captures</span>, <span class="va">surveys</span>, <span class="va">translocations</span>,</span>
-<span>                   survival_formula <span class="op">=</span> <span class="op">~</span> <span class="va">treatment</span>, </span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">captures</span>, surveys <span class="op">=</span> <span class="va">surveys</span>,</span>
+<span>                   additions <span class="op">=</span> <span class="va">translocations</span>,</span>
+<span>                   survival_formula <span class="op">=</span> <span class="op">~</span> <span class="va">treatment</span>,</span>
 <span>                   survival_fill_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>treatment <span class="op">=</span> <span class="st">"treated"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -340,12 +389,12 @@ are never detected (i.e., there are no mistakes in the individual PIT
 tag ID records).</p>
 <p>For reference, the parameters estimated by the model are as
 follows:</p>
-<table class="table">
+<table style="width:100%;" class="table">
 <colgroup>
-<col width="19%">
-<col width="19%">
-<col width="19%">
-<col width="42%">
+<col width="23%">
+<col width="23%">
+<col width="23%">
+<col width="30%">
 </colgroup>
 <thead><tr class="header">
 <th>Parameter</th>
@@ -502,7 +551,7 @@ occasion, and individual level.</p>
 <p>The default number of chains is 4. Generally, at least 1000 warmup
 and 1000 sampling iterations should be used; the example model below
 uses only 10 iterations of each to ensure a short run time.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
 <span>  chains <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -531,7 +580,7 @@ chains, 4 parallel chains, and 4 threads per chain. In the following
 code chunk, threads per chain is set automatically based on the number
 of cores available.</li>
 </ul>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
 <span>  chains <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -543,7 +592,7 @@ of cores available.</li>
 <span><span class="op">)</span></span></code></pre></div>
 <p>To diagnose potential non-convergence of the MCMC algorithm, inspect
 traceplots:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pars_to_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'alpha_lambda'</span>, </span>
 <span>                  <span class="st">'sigma_lambda'</span>, </span>
 <span>                  <span class="st">'beta_phi'</span>, </span>
@@ -555,7 +604,7 @@ traceplots:</p>
 of convergence (Rhat values
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>≥</mo><annotation encoding="application/x-tex">\geq</annotation></semantics></math>
 1.01):</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod</span><span class="op">$</span><span class="va">m_fit</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span><span class="va">pars_to_plot</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 10</span></span></span>
 <span><span class="co">#&gt;   variable       mean median     sd    mad     q5    q95  rhat ess_bulk ess_tail</span></span>
@@ -596,7 +645,7 @@ point estimates of <code>N</code> — chronically hard-to-detect
 individuals get undercounted — matching classical closed-population
 heterogeneity (<code>M_h</code>) theory.</li>
 </ul>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod_indiv_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  model <span class="op">=</span> <span class="st">"indiv_re"</span>,</span>
@@ -642,30 +691,45 @@ only on the sum of the two random effects — but it does mean the two
 <p>Time series of abundance, recruitment, and survival of introduced
 cohorts are available through the <code><a href="../reference/plot_model.html">mrmr2::plot_model()</a></code>
 function.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">'abundance'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="intro-to-mrmr2_files/figure-html/plot-abundance-1.png" class="r-plt" alt="" width="672"></p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">'recruitment'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="intro-to-mrmr2_files/figure-html/plot-recruitment-1.png" class="r-plt" alt="" width="672"></p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">'survival'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Joining with `by = join_by(primary_period)`</span></span></code></pre></div>
 <p><img src="intro-to-mrmr2_files/figure-html/plot-survival-1.png" class="r-plt" alt="" width="672"></p>
 <p><code>what = 'survival'</code> only pulls posterior draws of the
 latent state (<code>s</code>) for translocated individuals, rather than
 for every individual (real and data-augmented pseudo-individual) tracked
-by the model. On sites with a large superpopulation relative to the
-number of translocated individuals, this keeps memory use for this plot
-far below what it would be if the full <code>s</code> array were pulled
-and then filtered down afterward.</p>
-<div class="section level4">
-<h4 id="translocation-survival-tables">Translocation survival tables<a class="anchor" aria-label="anchor" href="#translocation-survival-tables"></a>
-</h4>
-<p>If individuals have been translocated into sites, you can generate a
-table of estimated survival through time for each cohort (release date)
-as a function of years since introduction:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+by the model (behavior of <code>what = 'survival'</code> in
+<code>mrmr</code>). On sites with a large superpopulation relative to
+the number of translocated individuals, this keeps memory use for this
+plot far below what it would be if the full <code>s</code> array were
+pulled and then filtered down afterward.</p>
+</div>
+<div class="section level3">
+<h3 id="custom-visualizations">Custom visualizations<a class="anchor" aria-label="anchor" href="#custom-visualizations"></a>
+</h3>
+<p>Any of the plotting functionality that you would expect from a
+<code>stanfit</code> model is available as well, by accessing the
+<code>m_fit</code> list element from a model object. For example, we
+could assess the posterior for the superpopulation size:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">bayesplot</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/bayesplot/reference/MCMC-traces.html" class="external-link">mcmc_trace</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">m_fit</span><span class="op">$</span><span class="fu">draws</span><span class="op">(</span><span class="st">"Nsuper"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="intro-to-mrmr2_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="672"></p>
+<p>See <a href="#model-structure">Model structure</a> for parameter
+names and definitions.</p>
+</div>
+<div class="section level3">
+<h3 id="translocationreintroduction-survival-tables">Translocation/reintroduction survival tables<a class="anchor" aria-label="anchor" href="#translocationreintroduction-survival-tables"></a>
+</h3>
+<p>If individuals were added to sites, you can generate a table of
+estimated survival through time for each cohort (release date) as a
+function of years since introduction:</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_table.html">survival_table</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Joining with `by = join_by(pit_tag_id)`</span></span>
 <span><span class="co">#&gt; Joining with `by = join_by(primary_period)`</span></span>
@@ -681,7 +745,7 @@ as a function of years since introduction:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                        4 2014-06-28        0.07            0.08         0.1</span></span></code></pre></div>
 <p>You can also get estimates of survival through time by individual or
 cohort:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_table.html">survival_table</a></span><span class="op">(</span><span class="va">mod</span>, by_cohort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Joining with `by = join_by(pit_tag_id)`</span></span>
 <span><span class="co">#&gt; Joining with `by = join_by(primary_period)`</span></span>
@@ -695,7 +759,7 @@ cohort:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                        2 2014-06-28        0.17            0.175        0.180</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                        3 2014-06-28        0.086<span style="text-decoration: underline;">7</span>          0.093<span style="text-decoration: underline;">3</span>       0.113</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                        4 2014-06-28        0.07            0.08         0.1</span></span></code></pre></div>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_table.html">survival_table</a></span><span class="op">(</span><span class="va">mod</span>, by_individual <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Joining with `by = join_by(pit_tag_id)`</span></span>
 <span><span class="co">#&gt; Joining with `by = join_by(primary_period)`</span></span>
@@ -714,57 +778,6 @@ cohort:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>                        0 2014-06-28   9000430001…       1               1    </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 300 more rows</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: hi_survival &lt;dbl&gt;</span></span></span></code></pre></div>
-</div>
-</div>
-<div class="section level3">
-<h3 id="custom-visualizations">Custom visualizations<a class="anchor" aria-label="anchor" href="#custom-visualizations"></a>
-</h3>
-<p>Any of the plotting functionality that you would expect from a
-<code>stanfit</code> model is available as well, by accessing the
-<code>m_fit</code> list element from a model object. For example, we
-could assess the posterior for the superpopulation size:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">bayesplot</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/bayesplot/reference/MCMC-traces.html" class="external-link">mcmc_trace</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">m_fit</span><span class="op">$</span><span class="fu">draws</span><span class="op">(</span><span class="st">"Nsuper"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="intro-to-mrmr2_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="672"></p>
-</div>
-<div class="section level3">
-<h3 id="cases-with-no-translocations">Cases with no translocations<a class="anchor" aria-label="anchor" href="#cases-with-no-translocations"></a>
-</h3>
-<p>In some cases, there may not be any introductions of animals into a
-population. The only difference in implementation in such cases is that
-the <code>translocations</code> argument to <code><a href="../reference/clean_data.html">clean_data()</a></code>
-can be omitted:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data_no_trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span><span class="va">captures</span>, <span class="va">surveys</span><span class="op">)</span></span>
-<span><span class="va">mod_no_trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span><span class="va">data_no_trans</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="cases-with-known-removals">Cases with known removals<a class="anchor" aria-label="anchor" href="#cases-with-known-removals"></a>
-</h3>
-<p>When individuals are removed from a population, e.g., for
-translocation, these known removals can be included as data to increase
-the precision of abundance estimates. An example dataset fitting this
-case is included at an imaginary site called “Equid”. Note below that we
-filter out dead animals – any dead animals encountered on surveys should
-be in the <code>removals</code> data, and not in the
-<code>captures</code> data frame, which should only contain live animals
-(those that might survive to the next primary period).</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a>captures <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">"extdata"</span>, </span>
-<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>                        <span class="st">"equid-captures.csv"</span>, </span>
-<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a>                         <span class="at">package =</span> <span class="st">"mrmr2"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a>  read_csv <span class="sc">|&gt;</span></span>
-<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>  <span class="fu">filter</span>(capture_animal_state <span class="sc">!=</span> <span class="st">'dead'</span>)</span>
-<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a>surveys <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">"extdata"</span>, </span>
-<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a>                       <span class="st">"equid-surveys.csv"</span>, </span>
-<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a>                       <span class="at">package =</span> <span class="st">"mrmr2"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a>  read_csv</span>
-<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a>removals <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">"extdata"</span>, </span>
-<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a>                        <span class="st">"equid-removals.csv"</span>, </span>
-<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a>                         <span class="at">package =</span> <span class="st">"mrmr2"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a>  read_csv</span>
-<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a></span>
-<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">clean_data</span>(captures, surveys, <span class="at">removals =</span> removals)</span>
-<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">fit_model</span>(d, <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>)</span></code></pre></div>
 </div>
 </div>
   </div>
