@@ -36,9 +36,10 @@ Imports:
     tibble,
     tidyr, 
     tidyselect
-Suggests: 
+Suggests:
     bayesplot,
     knitr,
+    patchwork,
     pkgdown,
     rmarkdown,
     testthat (>= 2.1.0)
