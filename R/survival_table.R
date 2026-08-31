@@ -61,8 +61,9 @@ survival_table <- function(
     ) |>
     filter(.data$pit_tag_id %in% as.character(model$data$additions$pit_tag_id)) |>
     left_join(distinct(model$data$additions,
-                       .data$pit_tag_id, .data$release_date)) |>
-    left_join(primary_period_dates) |>
+                       .data$pit_tag_id, .data$release_date),
+             by = "pit_tag_id") |>
+    left_join(primary_period_dates, by = "primary_period") |>
     filter(.data$date > .data$release_date) |>
     dplyr::transmute(
       .data$.draw, .data$value, .data$primary_period, .data$pit_tag_id,
