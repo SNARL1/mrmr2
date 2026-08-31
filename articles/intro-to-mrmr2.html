@@ -86,6 +86,23 @@ original <code>mrmr</code> package with optional detection-heterogeneity
 random effects (see <a href="#detection-re">Detection random-effect
 models</a>) and a lower-memory survival plotting method, and can be
 installed alongside <code>mrmr</code> without conflict.</p>
+<div class="section level3">
+<h3 id="install-latest-versions-of-cmdstanr-cmdstan-and-mrmr2-packages">Install latest versions of cmdstanr, cmdstan, and mrmr2
+packages<a class="anchor" aria-label="anchor" href="#install-latest-versions-of-cmdstanr-cmdstan-and-mrmr2-packages"></a>
+</h3>
+<p>Run any time; each line below only installs/updates a package if it’s
+missing or outdated – an already up-to-date package is left alone.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install/update cmdstanr from its dedicated repository</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">update_packages</span><span class="op">(</span><span class="st">"cmdstanr"</span>,</span>
+<span>                         repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://mc-stan.org/r-packages/"</span>, <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"repos"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># install/update CmdStan itself (a no-op if the latest release is already installed)</span></span>
+<span><span class="fu">cmdstanr</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/cmdstanr/reference/install_cmdstan.html" class="external-link">install_cmdstan</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># install/update mrmr2 from GitHub (a no-op if unchanged since the last install)</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"SNARL1/mrmr2"</span><span class="op">)</span></span></code></pre></div>
+</div>
 <div class="section level2">
 <h2 id="workflow-overview">Workflow overview<a class="anchor" aria-label="anchor" href="#workflow-overview"></a>
 </h2>
@@ -106,13 +123,12 @@ installed alongside <code>mrmr</code> without conflict.</p>
 <p>The package comes with example data that illustrate the expected
 format. Two files are required (describing captures and surveys) and two
 files are optional (describing additions and removals). These files are
-specified in the <a href="#data-process">data processing step</a> and
+specified in the <a href="#data-process">Data processing</a> step and
 typically named something like <code>capture</code>,<code>survey</code>,
 <code>translocation</code>, and <code>removal</code>, but any names are
 acceptable.</p>
-<p>In the following example, we include three of the four possible
-files. The first file specifies capture data:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<p>The first file specifies capture data:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
@@ -125,7 +141,7 @@ files. The first file specifies capture data:</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://readr.tidyverse.org" class="external-link">readr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mrmr2</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">capture</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
 <span>    <span class="st">"extdata"</span>, </span>
@@ -163,11 +179,13 @@ you would use a path to a local file (real data, not the example data
 included in the package). The capture file must contain, at a minimum,
 <code>pit_tag_id</code> and <code>survey_date</code> columns, but
 additional columns can also be included (e.g., <a href="#survival-covar">survival covariates</a>). Each row in this file
-represents a capture or recapture event.</p>
+represents a capture or recapture event, and only live individuals are
+included. Any previously-tagged individuals found dead during during a
+survey can be included in the <code>removal</code> file (see below).</p>
 <p>The second file specifies survey-level data, and at a minimum it must
 contain <code>survey_date</code>, <code>primary_period</code>, and
 <code>secondary_period columns</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">survey</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
 <span>    <span class="st">"extdata"</span>, </span>
@@ -204,7 +222,7 @@ for translocation/reintroduction records cannot overlap with the
 <p>The third file (optional) specifies translocation (or reintroduction)
 data, and at a minimum it must contain <code>release_date</code> and
 <code>pit_tag_id</code> columns:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">translocation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
 <span>    <span class="st">"extdata"</span>, </span>
@@ -235,8 +253,36 @@ data, and at a minimum it must contain <code>release_date</code> and
 <p>Each row corresponds to a translocation event of one unique
 individual. Because some mark-recapture datasets do not include
 translocations or reintroductions, this file is optional.</p>
-<p>The fourth file (optional), specifying removals, is described in the
-<a href="#removals">Cases with known removals</a> section.</p>
+<p>The fourth file (optional) specifies removal data and, at a minimum,
+contains, <code>removal_date</code> and <code>pit_tag_id</code> columns.
+Each row corresponds to a removal event of one unique individual.
+Because some mark-recapture datasets do not include removals, this file
+is optional.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">removal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
+<span>    <span class="st">"extdata"</span>, </span>
+<span>    <span class="st">"removal-example.csv"</span>, </span>
+<span>    package <span class="op">=</span> <span class="st">"mrmr2"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="font-weight: bold;">Rows: </span><span style="color: #0000BB;">5</span> <span style="font-weight: bold;">Columns: </span><span style="color: #0000BB;">4</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Column specification</span> <span style="color: #00BBBB;">────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt; <span style="font-weight: bold;">Delimiter:</span> ","</span></span>
+<span><span class="co">#&gt; <span style="color: #BB0000;">chr</span>  (1): frog_state</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">dbl</span>  (2): site_id, pit_tag_id</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">date</span> (1): removal_date</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Use `spec()` to retrieve the full column specification for this data.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Specify the column types or set `show_col_types = FALSE` to quiet this message.</span></span>
+<span></span>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">removal</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Rows: 5</span></span>
+<span><span class="co">#&gt; Columns: 4</span></span>
+<span><span class="co">#&gt; $ site_id      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449<span style="color: #949494;">, </span>70449</span></span>
+<span><span class="co">#&gt; $ removal_date <span style="color: #949494; font-style: italic;">&lt;date&gt;</span> 2015-06-18<span style="color: #949494;">, </span>2015-06-18<span style="color: #949494;">, </span>2015-06-18<span style="color: #949494;">, </span>2015-06-18<span style="color: #949494;">, </span>2015-06-1…</span></span>
+<span><span class="co">#&gt; $ pit_tag_id   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 9.00043e+14<span style="color: #949494;">, </span>9.00043e+14<span style="color: #949494;">, </span>9.00043e+14<span style="color: #949494;">, </span>9.00043e+14<span style="color: #949494;">, </span>9.00…</span></span>
+<span><span class="co">#&gt; $ frog_state   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "dead"<span style="color: #949494;">, </span>"dead"<span style="color: #949494;">, </span>"dead"<span style="color: #949494;">, </span>"dead"<span style="color: #949494;">, </span>"dead"</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="data-process">Data processing<a class="anchor" aria-label="anchor" href="#data-process"></a>
@@ -252,10 +298,16 @@ own data frames, as in the example below, where the data frame
 above) is passed as <code><a href="../reference/clean_data.html">clean_data()</a></code>’s <code>additions</code>
 argument. <code><a href="../reference/clean_data.html">clean_data()</a></code> determines the role of each input
 solely from these argument names, and will raise an error if any
-argument is passed positionally instead of by name:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+argument is passed positionally instead of by name (e.g.,
+<code>capture</code> instead of <code>captures = capture</code>):</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">capture</span>, surveys <span class="op">=</span> <span class="va">survey</span>,</span>
-<span>                   additions <span class="op">=</span> <span class="va">translocation</span><span class="op">)</span></span></code></pre></div>
+<span>                   additions <span class="op">=</span> <span class="va">translocation</span>, removals <span class="op">=</span> <span class="va">removal</span><span class="op">)</span></span></code></pre></div>
+<p>In some cases, there may be no introductions or removals of
+individuals into/from a population. The only difference in
+implementation in such cases is that the <code>additions</code> and/or
+<code>removals</code> argument to <code><a href="../reference/clean_data.html">clean_data()</a></code> can be
+omitted.</p>
 <p>This function performs several data-preparation steps. It checks the
 capture, survey, and translocation/reintroduction data for common
 problems (e.g., duplicate records, dead animals left in the capture
@@ -275,47 +327,6 @@ sections. The output provides data frames as list elements, and a list
 element called <code>stan_d</code>, which contains data that has been
 pre-processed for model fitting.</p>
 <div class="section level4">
-<h4 id="cases-without-translocations-or-reintroductions">Cases without translocations or reintroductions<a class="anchor" aria-label="anchor" href="#cases-without-translocations-or-reintroductions"></a>
-</h4>
-<p>In some cases, there may be no introductions of individuals into a
-population. The only difference in implementation in such cases is that
-the <code>additions</code> argument to <code><a href="../reference/clean_data.html">clean_data()</a></code> can be
-omitted:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data_no_trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">capture</span>, surveys <span class="op">=</span> <span class="va">survey</span><span class="op">)</span></span>
-<span><span class="va">mod_no_trans</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span><span class="va">data_no_trans</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="removals">Cases with known removals<a class="anchor" aria-label="anchor" href="#removals"></a>
-</h4>
-<p>Know removals of individuals from a population can be included as
-data to increase the precision of abundance estimates. Removals can
-include individuals collected for translocation to another site, or
-previously-tagged individuals that are found dead during a survey. An
-example dataset fitting this case is included for an imaginary site
-called “Equid”. In the code chunk below, we first filter out dead
-animals from the capture history – the <code>capture</code> data frame
-should only contain live animals (those that might survive to the next
-primary period), and include them via a <code>removal</code> data
-frame.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">capture</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, </span>
-<span>                        <span class="st">"equid-captures.csv"</span>, </span>
-<span>                         package <span class="op">=</span> <span class="st">"mrmr2"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">capture_animal_state</span> <span class="op">!=</span> <span class="st">'dead'</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">survey</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, </span>
-<span>                       <span class="st">"equid-surveys.csv"</span>, </span>
-<span>                       package <span class="op">=</span> <span class="st">"mrmr2"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">removal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>,</span>
-<span>                        <span class="st">"equid-removals.csv"</span>,</span>
-<span>                         package <span class="op">=</span> <span class="st">"mrmr2"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">capture</span>, surveys <span class="op">=</span> <span class="va">survey</span>, removals <span class="op">=</span> <span class="va">removal</span><span class="op">)</span></span>
-<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span><span class="va">d</span>, parallel_chains <span class="op">=</span> <span class="fl">4</span>, chains <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level4">
 <h4 id="including-detectionnon-detection-covariates">Including detection/non-detection covariates<a class="anchor" aria-label="anchor" href="#including-detectionnon-detection-covariates"></a>
 </h4>
 <p>Survey-level covariates that might affect the probability of
@@ -323,40 +334,70 @@ detection can be included via the <code>capture_formula</code> argument
 to <code>clean_data</code>. <strong>Note:</strong> it is a good idea to
 ensure that any continuous covariates are rescaled prior to using them
 as covariates to have mean = 0 and unit standard deviation. This can be
-achieved by adding a column to the <code>captures</code> data Using a
+achieved by adding a column to the <code>surveys</code> data. Using a
 covariate value like <code>year</code>, which typically has a mean in
 the thousands and a standard deviation far from one may cause numerical
 issues when fitting a model.</p>
+<p><strong>Note:</strong> covariate column names must be unique across
+all data frames supplied to <code><a href="../reference/clean_data.html">clean_data()</a></code>
+(<code>captures</code>, <code>surveys</code>, <code>additions</code>,
+and <code>removals</code>). Internally, <code><a href="../reference/clean_data.html">clean_data()</a></code> joins
+these data frames together using all of their shared column names as the
+join key; if a covariate you add happens to share a name with a column
+in another data frame, it will unexpectedly become part of that join and
+can silently produce incorrect results.</p>
 <p>A detection covariate, such as <code>person_hours</code>, can be
 included as follows:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># center and scale the covariate</span></span>
-<span><span class="va">captures</span> <span class="op">&lt;-</span> <span class="va">captures</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>c_person_hours <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">person_hours</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">survey</span> <span class="op">&lt;-</span> <span class="va">survey</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>c_survey_duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">survey_duration</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># specify the formula</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">captures</span>, surveys <span class="op">=</span> <span class="va">surveys</span>,</span>
-<span>                   additions <span class="op">=</span> <span class="va">translocations</span>,</span>
-<span>                   capture_formula <span class="op">=</span> <span class="op">~</span> <span class="va">c_person_hours</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">capture</span>, surveys <span class="op">=</span> <span class="va">survey</span>,</span>
+<span>                   additions <span class="op">=</span> <span class="va">translocation</span>,</span>
+<span>                   capture_formula <span class="op">=</span> <span class="op">~</span> <span class="va">c_survey_duration</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="survival-covar">Including survival covariates<a class="anchor" aria-label="anchor" href="#survival-covar"></a>
 </h4>
 <p>Individual-level survival covariates can be included via the
 <code>survival_formula</code> and <code>survival_fill_value</code>
-arguments. Both of these arguments must be specified because covariate
-values for pseudo-individuals must be filled in (they are never
-observed). For example, to evaluate the effect of an experimental
-treatment, if some individuals belong to a “treated” group and others
-belong to an “control” group, then one of these groups must be specified
-as a fill value (e.g., “treated” or “control”, depending on the
-experiment):</p>
+arguments. Any variable named in <code>survival_formula</code> must be a
+column in <code>captures</code> or <code>additions</code> – these are
+the only two places <code><a href="../reference/clean_data.html">clean_data()</a></code> looks for individual-level
+values – and must be fixed for each individual over the entire
+study.</p>
+<p>Both arguments must be specified together, because
+<code>survival_fill_value</code> supplies the covariate value for every
+individual your data says nothing about: the (typically numerous)
+augmented pseudo-individuals, which were never captured and so can never
+have a recorded value, as well as any real individual whose
+<code>captures</code>/<code>additions</code> records happen to omit the
+covariate. In other words, <code>survival_fill_value</code> should be
+set to whichever level the covariate takes on <em>by default</em>, in
+the absence of an explicit value – not simply whichever group happens to
+be smaller or more notable.</p>
+<p>For example, suppose you want to evaluate the effect of an experiment
+on a subset of individuals. In that experiment, a treatment is applied
+to half of the individuals in the subset (“treated”) and the other half
+are “untreated” controls. For individuals that were not part of the
+experiment and for pseudo-individuals, a <code>treatment</code> value is
+absent (<code>NA</code>). Because the pseudo-individuals stand in for
+the general population that might exist but was never observed, and
+because an absent value already means “untreated” for real individuals
+that were not part of the experiment, the fill value should almost
+always be “untreated”:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># specify the formula</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">captures</span>, surveys <span class="op">=</span> <span class="va">surveys</span>,</span>
 <span>                   additions <span class="op">=</span> <span class="va">translocations</span>,</span>
 <span>                   survival_formula <span class="op">=</span> <span class="op">~</span> <span class="va">treatment</span>,</span>
-<span>                   survival_fill_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>treatment <span class="op">=</span> <span class="st">"treated"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>                   survival_fill_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>treatment <span class="op">=</span> <span class="st">"untreated"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Setting <code>survival_fill_value = c(treatment = "treated")</code>
+would only be appropriate in the reverse situation, where “treated” is
+the default for individuals that were not included in the experiment and
+for the control individuals.</p>
 </div>
 </div>
 <div class="section level3">
@@ -379,12 +420,12 @@ are never detected (i.e., there are no mistakes in the individual PIT
 tag ID records).</p>
 <p>For reference, the parameters estimated by the model are as
 follows:</p>
-<table style="width:100%;" class="table">
+<table class="table">
 <colgroup>
-<col width="23%">
-<col width="23%">
-<col width="23%">
-<col width="30%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
 </colgroup>
 <thead><tr class="header">
 <th>Parameter</th>
@@ -599,11 +640,11 @@ of convergence (Rhat values
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 10</span></span></span>
 <span><span class="co">#&gt;   variable       mean median     sd    mad     q5    q95  rhat ess_bulk ess_tail</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> alpha_lambda -<span style="color: #BB0000;">4.74</span>  -<span style="color: #BB0000;">4.76</span>  0.529  0.399  -<span style="color: #BB0000;">5.41</span>  -<span style="color: #BB0000;">3.81</span>  1.19        20       20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> sigma_lambda  1.80   1.69  0.464  0.467   1.20   2.56  1.20        20       20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> beta_phi[1]   1.83   1.78  0.417  0.402   1.18   2.46  1.04        20       20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> sigma_phi     1.07   1.01  0.322  0.251   0.583  1.63  0.988       20       20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> beta_detect… -<span style="color: #BB0000;">0.390</span> -<span style="color: #BB0000;">0.378</span> 0.060<span style="text-decoration: underline;">0</span> 0.063<span style="text-decoration: underline;">0</span> -<span style="color: #BB0000;">0.486</span> -<span style="color: #BB0000;">0.307</span> 0.984       20       20</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> alpha_lambda -<span style="color: #BB0000;">4.80</span>  -<span style="color: #BB0000;">4.86</span>  0.498  0.499  -<span style="color: #BB0000;">5.47</span>  -<span style="color: #BB0000;">4.03</span>  1.12        20       20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> sigma_lambda  1.96   1.92  0.449  0.462   1.34   2.72  1.28        20       20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> beta_phi[1]   1.78   1.74  0.377  0.302   1.24   2.39  1.03        20       20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> sigma_phi     1.33   1.29  0.552  0.471   0.672  2.25  1.31        20       20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> beta_detect… -<span style="color: #BB0000;">0.396</span> -<span style="color: #BB0000;">0.381</span> 0.062<span style="text-decoration: underline;">9</span> 0.053<span style="text-decoration: underline;">7</span> -<span style="color: #BB0000;">0.512</span> -<span style="color: #BB0000;">0.328</span> 0.991       20       20</span></span></code></pre></div>
 <div class="section level4">
 <h4 id="detection-re">Detection random-effect models<a class="anchor" aria-label="anchor" href="#detection-re"></a>
 </h4>
@@ -726,13 +767,13 @@ function of years since introduction:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 5</span></span></span>
 <span><span class="co">#&gt;   years_since_introduction release_date lo_survival median_survival hi_survival</span></span>
 <span><span class="co">#&gt;                      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                        0 2014-06-28        0.600           0.627        0.667</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                        0 2017-08-09        0.867           0.9          1    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                        1 2014-06-28        0.347           0.353        0.373</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                        1 2017-08-09        0.5             0.558        0.650</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                        2 2014-06-28        0.17            0.175        0.180</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                        3 2014-06-28        0.086<span style="text-decoration: underline;">7</span>          0.093<span style="text-decoration: underline;">3</span>       0.113</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                        4 2014-06-28        0.07            0.08         0.1</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                        0 2014-06-28        0.607           0.63        0.654 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                        0 2017-08-09        0.867           0.933       1     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                        1 2014-06-28        0.347           0.36        0.380 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                        1 2017-08-09        0.516           0.567       0.684 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                        2 2014-06-28        0.17            0.175       0.185 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                        3 2014-06-28        0.086<span style="text-decoration: underline;">7</span>          0.093<span style="text-decoration: underline;">3</span>      0.107 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                        4 2014-06-28        0.07            0.08        0.090<span style="text-decoration: underline;">2</span></span></span></code></pre></div>
 <p>You can also get estimates of survival through time by individual or
 cohort:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
@@ -742,13 +783,13 @@ cohort:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 5</span></span></span>
 <span><span class="co">#&gt;   years_since_introduction release_date lo_survival median_survival hi_survival</span></span>
 <span><span class="co">#&gt;                      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                        0 2014-06-28        0.600           0.627        0.667</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                        0 2017-08-09        0.867           0.9          1    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                        1 2014-06-28        0.347           0.353        0.373</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                        1 2017-08-09        0.5             0.558        0.650</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                        2 2014-06-28        0.17            0.175        0.180</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                        3 2014-06-28        0.086<span style="text-decoration: underline;">7</span>          0.093<span style="text-decoration: underline;">3</span>       0.113</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                        4 2014-06-28        0.07            0.08         0.1</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                        0 2014-06-28        0.607           0.63        0.654 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                        0 2017-08-09        0.867           0.933       1     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                        1 2014-06-28        0.347           0.36        0.380 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                        1 2017-08-09        0.516           0.567       0.684 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                        2 2014-06-28        0.17            0.175       0.185 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                        3 2014-06-28        0.086<span style="text-decoration: underline;">7</span>          0.093<span style="text-decoration: underline;">3</span>      0.107 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                        4 2014-06-28        0.07            0.08        0.090<span style="text-decoration: underline;">2</span></span></span></code></pre></div>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_table.html">survival_table</a></span><span class="op">(</span><span class="va">mod</span>, by_individual <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Joining with `by = join_by(pit_tag_id)`</span></span>
