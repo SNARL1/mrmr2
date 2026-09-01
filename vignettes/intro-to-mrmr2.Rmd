@@ -21,19 +21,20 @@ knitr::opts_chunk$set(
 
 The `mrmr2` package is designed to simplify and expedite mark-recapture
 data processing, parameter estimation, and visualization for a narrow
-class of mark recapture data (namely, those collected by researchers at
+class of mark-recapture data (namely, those collected by researchers at
 the [Mountain Lakes Research Group](https://mountainlakesresearch.com)
 (University of California, [Sierra Nevada Aquatic Research
 Laboratory](https://snarl.nrs.ucsb.edu/)). It extends the original
 `mrmr` package with optional detection-heterogeneity random effects (see
 [Detection random-effect models](#detection-re)) and a lower-memory
 survival plotting method, and can be installed alongside `mrmr` without
-conflict.
+conflict. `mrmr2` also incorporates numerous code fixes and improved
+default plots.
 
 ## Install latest versions of cmdstanr, cmdstan, and mrmr2 packages
 
-Run any time; each line below only installs/updates a package if it's
-missing or outdated -- an already up-to-date package is left alone.
+The following code chunk only installs/updates a package if it's missing
+or outdated -- an already up-to-date package is left alone.
 
 ```{r install-stan-mrmr2-packages, eval=FALSE}
 # install/update cmdstanr from its dedicated repository
@@ -95,9 +96,9 @@ path to a local file (real data, not the example data included in the
 package). The capture file must contain, at a minimum, `pit_tag_id` and
 `survey_date` columns, but additional columns can also be included
 (e.g., [survival covariates](#survival-covar)). Each row in this file
-represents a capture or recapture event, and only live individuals are
-included. Any previously-tagged individuals found dead during during
-surveys can be included in the `removal` file (see below).
+represents a capture event, and only live individuals are included. Any
+previously-tagged individuals found dead during during surveys can be
+included in the `removal` file (see below).
 
 The second file specifies survey-level data, and at a minimum it must
 contain `survey_date`, `primary_period`, and `secondary_period` columns:
@@ -117,9 +118,9 @@ glimpse(survey)
 Each row is a unique survey. If translocations or reintroductions
 occurred at the site, these actions need to be included in the `survey`
 dataset, each as a typical survey event. Specifically, `survey_date` and
-`primary_period` values are provided, the `primary_period` is sequential
-with all survey records in the dataset based on `visit_date`, and
-`secondary_period` = 0. Translocations/reintroductions cannot occur
+`primary_period` values are provided, the `primary_period` value is
+sequential with all survey records in the dataset based on `visit_date`,
+and `secondary_period` = 0. Translocations/reintroductions cannot occur
 during a primary period. Therefore, the `survey_date` for
 translocation/reintroduction records cannot overlap with the
 `survey_date` range of any primary period.
@@ -139,16 +140,16 @@ translocation <- read_csv(
 glimpse(translocation)
 ```
 
-Each row corresponds to an addition event of one unique individual.
-Because some mark-recapture datasets do not include translocations or
+Each row is an addition event of one unique individual. Because some
+mark-recapture datasets do not include translocations or
 reintroductions, this file is optional.
 
 The fourth file specifies removal data and, at a minimum, contains,
-`removal_date` and `pit_tag_id` columns. Each row corresponds to a
-removal event of one unique individual, including collection of
-individuals for translocation to other sites and deaths of
-previously-tagged individuals. Because some mark-recapture datasets do
-not include removals, this file is optional.
+`removal_date` and `pit_tag_id` columns. Each row is a removal event of
+one unique individual, including previously-tagged individuals collected
+for translocation to other sites and previously-tagged individuals found
+dead during surveys. Because some mark-recapture datasets do not include
+removals, this file is optional.
 
 ```{r show-remove-data}
 removal <- read_csv(
@@ -169,7 +170,7 @@ to the `mrmr2::clean_data()` function: `captures`, `surveys`,
 `additions` (translocations or reintroductions, optional), and
 `removals` (optional). Note that these are the names `clean_data()`
 requires for its arguments -- they need not match the names you gave
-your own data frames, as in the example below, where the data frame
+your own data frames. For example, in the example below, the data frame
 `translocation` (a name we chose when reading in the file above) is
 passed as `clean_data()`'s `additions` argument. `clean_data()`
 determines the role of each input solely from these argument names, and
@@ -177,13 +178,17 @@ will raise an error if any argument is passed positionally instead of by
 name (e.g., `capture` instead of `captures = capture`):
 
 ```{r clean-data, message=FALSE}
-data <- clean_data(captures = capture, surveys = survey,
-                   additions = translocation, removals = removal)
+data <- clean_data(
+  captures = capture, 
+  surveys = survey,
+  additions = translocation, 
+  removals = removal
+  )
 ```
 
 In some cases, there may be no introductions or removals of individuals
-into/from a population. The only difference in implementation in such
-cases is that the `additions` and/or `removals` argument to
+into/from a population. In such cases, the only difference in
+implementation is that the `additions` and/or `removals` arguments to
 `clean_data()` are omitted.
 
 The `mrmr2:clean_data` function performs several data-preparation steps.
@@ -208,21 +213,20 @@ contains data that has been pre-processed for model fitting.
 ### Including detection/non-detection covariates {#detection-covar}
 
 Survey-level covariates that might affect the probability of detection
-can be included via the `capture_formula` argument to `clean_data`.
-**Note:** it is a good idea to ensure that any continuous covariates are
-rescaled prior to using them as covariates to have mean = 0 and unit
-standard deviation. This can be achieved by adding a column to the
-`surveys` data. Using a covariate value like `year`, which typically has
-a mean in the thousands and a standard deviation far from one may cause
-numerical issues when fitting a model.
+can be included via the `capture_formula` argument to `clean_data`. Such
+covariates must be in the `surveys` dataframe. Prior to using a column
+containing continuous values as a covariate, it is important to rescale
+these values to have mean = 0 and standard deviation = 1. Using a
+covariate value like `year`, which typically has a mean in the thousands
+and a standard deviation far from one may cause numerical issues when
+fitting a model.
 
-**Note:** covariate column names must be unique across all data frames
-supplied to `clean_data()` (`captures`, `surveys`, `additions`, and
-`removals`). Internally, `clean_data()` joins these data frames together
-using all of their shared column names as the join key; if an added
-covariate shares a name with a column in another data frame, it will
-unexpectedly become part of that join and can silently produce incorrect
-results.
+Covariate column names must be unique across all data frames supplied to
+`clean_data()` (`captures`, `surveys`, `additions`, and `removals`).
+Internally, `clean_data()` joins these data frames together using all of
+their shared column names as the join key; if an added covariate shares
+a name with a column in another data frame, it will unexpectedly become
+part of that join and can silently produce incorrect results.
 
 A detection covariate, such as `survey_duration`, can be included as
 follows:
@@ -233,9 +237,12 @@ survey <- survey |>
   mutate(c_survey_duration = c(scale(survey_duration)))
 
 # specify the formula
-data <- clean_data(captures = capture, surveys = survey,
-                   additions = translocation,
-                   capture_formula = ~ c_survey_duration)
+data <- clean_data(
+  captures = capture, 
+  surveys = survey,
+  additions = translocation,
+  capture_formula = ~ c_survey_duration
+  )
 ```
 
 ### Including survival covariates {#survival-covar}
@@ -253,26 +260,29 @@ about: the (typically numerous) augmented pseudo-individuals, which were
 never captured and so can never have a recorded value, as well as any
 real individual whose `captures`/`additions` records lack the covariate.
 In other words, `survival_fill_value` should be set to whichever level
-the covariate takes on *by default*, in the absence of an explicit value
--- not simply whichever group happens to be smaller or more notable.
+the covariate takes on *by default*, in the absence of an explicit
+value.
 
-For example, suppose you want to evaluate the effect of an experiment on
-a subset of individuals. In that experiment, a treatment is applied to
-half of the individuals in the subset ("treated") and the other half are
-"untreated" controls. For individuals that were not part of the
-experiment and for pseudo-individuals, a `treatment` value is absent
-(`NA`). Because the pseudo-individuals stand in for the general
-population that might exist but was never observed, and because an
-absent value already means "untreated" for real individuals that were
-not part of the experiment, the fill value should almost always be
-"untreated":
+For example, suppose you want to evaluate the effect of an experiment
+that was conducted on a subset of individuals. In that experiment, a
+treatment is applied to half of the individuals in the subset
+("treated") and the other half are "untreated" controls. For individuals
+that were not part of the experiment and for pseudo-individuals, a
+`treatment` value is absent (`NA`). Because the pseudo-individuals stand
+in for the general population that might exist but was never observed,
+and because an absent value already means "untreated" for real
+individuals that were not part of the experiment, the fill value should
+almost always be "untreated":
 
 ```{r survival-covariate, message=FALSE, eval=FALSE}
 # specify the formula
-data <- clean_data(captures = capture, surveys = survey,
-                   additions = translocation,
-                   survival_formula = ~ treatment,
-                   survival_fill_value = c(treatment = "untreated"))
+data <- clean_data(
+  captures = capture, 
+  surveys = survey,
+  additions = translocation,
+  survival_formula = ~ treatment,
+  survival_fill_value = c(treatment = "untreated")
+  )
 ```
 
 Setting `survival_fill_value = c(treatment = "treated")` would only be
@@ -316,7 +326,7 @@ For reference, the parameters estimated by the model are as follows:
 
 ::: param-table
 | Parameter | Symbol | Model | Definition |
-|----|----|----|----|
+|------------------|------------------|------------------|------------------|
 | `alpha_lambda` | $\alpha_\lambda$ | all | Intercept of per-primary-period recruitment probability, on the logit scale |
 | `sigma_lambda` | $\sigma_\lambda$ | all | Standard deviation of the recruitment random effect (`eps_lambda`) across primary periods |
 | `eps_lambda` | $\epsilon_\lambda$ | all | Standardized per-primary-period random effect on recruitment probability |
@@ -345,13 +355,14 @@ accounts for known introductions into and removals from the population,
 and has random effects to account for variation in survival and
 recruitment through time. It is also possible to add random effects to
 account for [variation in detection](#detection-re) at the period
-(`primary period`), occasion (`secondary period`, and individual level.
+(`primary period`), occasion (`secondary period`), and individual level.
 
 The default number of chains is 4. Generally, at least 1000 warmup and
 1000 sampling iterations should be used; the example model below uses
 only 10 iterations of each to ensure a short run time.
 
 ```{r fit-model, message=FALSE, warning=FALSE, results='hide'}
+# fit-model
 mod <- fit_model(
   data = data, 
   chains = 4,
@@ -377,6 +388,7 @@ parallelization by providing the following additional arguments:
   automatically based on the number of cores available.
 
 ```{r fit-model-threaded, message=FALSE, warning=FALSE, eval=FALSE}
+# fit-model-threaded
 # WARNING: This model run takes 10-20 minutes
 mod <- fit_model(
   data = data, 
@@ -389,16 +401,17 @@ mod <- fit_model(
 )
 ```
 
-To diagnose potential non-convergence of the MCMC algorithm, inspect
-traceplots and Rhat values. `mod` from the `fit-model` code chunk above
-is fit with only 10 warmup and 10 sampling iterations, to keep this
-vignette's build fast. As a result of the limited number of iterations,
-its traceplots and Rhat values are not informative. To provide more
-useful diagnostics, the traceplots and Rhat table below are based on
-`mod` from the `fit-model-threaded` code chunk. To avoid this code
-chunk's 10-20 minute run time, a slightly modified version of the code
-was pre-run and the saved model fit was used to create the traceplots
-and Rhat table.
+After the `mrmr2::fit_model` step completes, diagnose potential
+non-convergence of the MCMC algorithm by inspecting traceplots and Rhat
+values. Note that `mod` from the `fit-model` code chunk above is fit
+with only 10 warmup and 10 sampling iterations, to minimize the run time
+of this step. As a result of the limited number of iterations, the
+resulting traceplots and Rhat values are not informative. To provide
+more useful diagnostics, the traceplots and Rhat table below are based
+on `mod` from the `fit_model_threaded` code chunk immediately above,
+which is a more typical `fit_model` specification. To avoid this code
+chunk's 10-20 minute run time, it was pre-run and the saved model fit
+was used to create the traceplots and Rhat table.
 
 ```{r regenerate-traceplot-cache, include=FALSE, message=FALSE, warning=FALSE}
 # Maintainer-only setup chunk, hidden from the rendered vignette. It
@@ -436,12 +449,12 @@ if (!file.exists(cache_path)) {
 draws_for_plot <- readRDS(cache_path)
 ```
 
-```{r plot-traceplots-prerun}
+```{r plot-traceplots-prerun, echo=FALSE}
 bayesplot::mcmc_trace(draws_for_plot)
 ```
 
-Signs of potential lack of convergence include any moments (like mean or
-standard deviation) changing over time, and high within-chain
+Signs of potential lack of convergence include any moments (e.g., mean
+or standard deviation) changing over time, and high within-chain
 auto-correlation. High within-chain autocorrelation means the sampler is
 exploring the posterior slowly (poor mixing), which reduces the
 effective sample size relative to the raw number of draws, and shows up
@@ -449,19 +462,20 @@ in a trace plot as slow-moving, snake-like trends rather than a "hairy
 caterpillar" pattern that jumps around its mean quickly. Additionally,
 if multiple chains initialized with different starting values do not
 converge to similar equilibrium values, this may also suggest issues
-with convergence.
+with convergence. These traceplots show typical "hairy caterpillar"
+patterns indicative of model convergence.
 
 Here is the Rhat table. Rhat values $\ge$ 1.01 indicate of a lack of
 convergence.
 
-```{r print-model-prerun}
+```{r print-model-prerun, echo=FALSE}
 posterior::summarise_draws(draws_for_plot)
 ```
 
-If you run the `fit-model-threaded` chunk yourself, you can generate the
+If you run the `fit_model_threaded` chunk yourself, you can generate the
 same diagnostics for your fit as follows:
 
-```{r plot-traceplots}
+```{r plot-traceplots, eval=FALSE}
 pars_to_plot <- c('alpha_lambda',
                   'sigma_lambda',
                   'beta_phi',
@@ -471,11 +485,11 @@ pars_to_plot <- c('alpha_lambda',
 bayesplot::mcmc_trace(mod$m_fit$draws(pars_to_plot))
 ```
 
-```{r print-model}
+```{r print-model, eval=FALSE}
 mod$m_fit$summary(pars_to_plot)
 ```
 
-### Detection random-effect models {#detection-re}
+## Detection random-effect models {#detection-re}
 
 By default (`model = "base"`), detection probability is a purely
 deterministic function of any covariates supplied via `capture_formula`
@@ -500,11 +514,15 @@ random effect to detection:
   chronically hard-to-detect individuals get undercounted — matching
   classical closed-population heterogeneity (`M_h`) theory.
 
+The following code chunk adds an individual-level random effect to
+detection probability
+
 ```{r fit-model-re, eval=FALSE}
 mod_indiv_re <- fit_model(
   data = data,
   model = "indiv_re",
-  parallel_chains = parallel::detectCores(),
+  chains = 4,
+  parallel_chains = 4,
   threads_per_chain = max(1, parallel::detectCores() %/% 4), 
   cpp_options = list(stan_threads = TRUE),
   iter_warmup = 1000,
@@ -538,14 +556,16 @@ depend only on the sum of the two random effects — but it does mean the
 two `sigma` estimates shouldn't be read in isolation.
 
 Additional details about the `detect_re` and `indiv_re` models,
-including runs with simulated and real data, are provided in [An
-Introduction to CMR Analysis Using the mrmr and mrmr2
+including evaluation of outputs from model runs using simulated and real
+data, are provided in [An Introduction to CMR Analysis Using the mrmr
+and mrmr2
 Packages](https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd).
 
 ## Built-in visualizations
 
-Time series of abundance, recruitment, and survival of introduced
-cohorts are available through the `mrmr2::plot_model()` function.
+Time series of population abundance, recruitment, and survival of
+introduced cohorts are available through the `mrmr2::plot_model()`
+function.
 
 ```{r plot-abundance}
 plot_model(mod, what = 'abundance')
@@ -576,22 +596,25 @@ The default plots can be customized using standard plotting functions:
 
 ```{r plots-custom, fig.height=7, fig.width=7}
 p1 <- plot_model(mod, what = "abundance") 
-p1 <- p1 + ggtitle("A. Population size") +
-    ylab("Number of adults") + 
-    expand_limits(y = 0)
+p1 <- p1 + ggtitle("A. Population size") + 
+  ylab("Number of adults") + 
+  expand_limits(y = 0) +
+  theme_classic()
   
 p2 <- plot_model(mod, what = "recruitment")
 p2 <- p2 + ggtitle("B. Recruitment") +
-    ylab("Number of adults")
+  ylab("Number of adults") +
+  theme_classic()
 
 p3 <- plot_model(mod, what = "survival")
 p3 <- p3 + ggtitle("C. Survival of Translocated Cohorts") +
-  ylab("Number of adults")
+  ylab("Number of adults") + 
+  theme_classic()
   
 p1 / p2 /p3
 ```
 
-To save the custom plots (.png, .pdf, etc.):
+To save the custom plots (in .png, .pdf, and other formats):
 
 ```{r save-plot, eval=FALSE}
 ggsave("custom_plots.png", height = 6.5, width = 6.5)
@@ -614,19 +637,14 @@ definitions.
 ## Translocation/reintroduction survival tables
 
 If individuals were added to sites, you can generate a table of
-estimated survival through time for each cohort (release date) as a
-function of years since introduction:
+estimated survival through time for each introduced cohort (release
+date) as a function of years since introduction:
 
 ```{r survival-table}
-survival_table(mod)
-```
-
-You can also get estimates of survival through time by individual or
-cohort:
-
-```{r survival-table-cohort}
 survival_table(mod, by_cohort = TRUE)
 ```
+
+You can also get estimates of survival through time by individual:
 
 ```{r survival-table-ind}
 survival_table(mod, by_individual = TRUE)
