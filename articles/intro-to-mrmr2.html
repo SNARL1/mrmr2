@@ -381,13 +381,12 @@ included as follows:</p>
 arguments. Any variable named in <code>survival_formula</code> must be a
 column in <code>captures</code> or <code>additions</code> – these are
 the only two places <code><a href="../reference/clean_data.html">clean_data()</a></code> looks for individual-level
-values – and must be fixed for each individual over the entire
-study.</p>
-<p>Both arguments must be specified together, because
+values – and must be fixed for each individual over the entire study.
+The arguments must be specified together, because
 <code>survival_fill_value</code> supplies the covariate value for every
 individual the data says nothing about: the (typically numerous)
 augmented pseudo-individuals, which were never captured and so can never
-have a recorded value, as well as any real individual whose
+have a recorded value, and any real individual whose
 <code>captures</code>/<code>additions</code> records lack the covariate.
 In other words, <code>survival_fill_value</code> should be set to
 whichever level the covariate takes on <em>by default</em>, in the
@@ -415,6 +414,16 @@ the fill value should almost always be “untreated”:</p>
 would only be appropriate in the reverse situation, where “treated” is
 the default for individuals that were not included in the experiment and
 for the control individuals.</p>
+<p>Pseudo-individuals make some survival covariates hard to include,
+specifically when the covariate value assigned to a pseudo-individual
+(via the <code>survival_fill_value</code>) is ambiguous. For example,
+adding a <code>sex</code> covariate requires assigning a sex to every
+pseudo-individual, but what sex to assign is ambiguous. One approach is
+to assign sex based on sampling sex from the observed sex ratio, but
+this assumes that the sexes have equal detectability. If this assumption
+is violated, estimates will likely be biased. Given these challenges,
+the best approach is include only covariates for which the
+<code>survival_fill_value</code> is unambiguous (see example above).</p>
 </div>
 </div>
 <div class="section level3">
