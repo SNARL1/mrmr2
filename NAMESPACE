@@ -36,7 +36,6 @@ importFrom(ggplot2,
   ggplot,
   scale_color_brewer,
   scale_fill_brewer,
-  scale_x_date,
   theme,
   xlab,
   ylab

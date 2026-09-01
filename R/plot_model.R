@@ -24,7 +24,7 @@
 #' @importFrom dplyr group_by summarize left_join ungroup filter distinct
 #'   rename
 #' @importFrom ggplot2 ggplot geom_line geom_ribbon xlab ylab facet_wrap theme
-#'   scale_color_brewer aes element_text scale_fill_brewer scale_x_date geom_point
+#'   scale_color_brewer aes element_text scale_fill_brewer geom_point
 #'   geom_vline geom_text geom_linerange
 #' @importFrom reshape2 melt
 #' @importFrom rlang .data
@@ -83,7 +83,7 @@ plot_model <- function(model, what) {
       filter(.data$primary_period > 1) |>
       left_join(primary_period_dates, by = "primary_period") |>
       filter(.data$date >= .data$release_date) |>
-      group_by(.data$release_date, .data$date) |>
+      group_by(.data$release_date, .data$date, .data$year) |>
       summarize(lo = quantile(.data$fraction_alive, .025),
                 med = median(.data$fraction_alive),
                 hi = quantile(.data$fraction_alive, .975),
@@ -99,7 +99,9 @@ plot_model <- function(model, what) {
       xlab('Date') +
       scale_color_brewer('Introduction date', type = 'qual') +
       scale_fill_brewer('Introduction date', type = 'qual') +
-      scale_x_date(date_breaks = "1 year")
+      facet_wrap(~.data$year, nrow = 1, scales = 'free_x') +
+      theme(axis.text.x = element_text(angle = 90),
+            legend.position = "top")
   } else {
     survey_prim_periods <- model$data$surveys |>
       group_by(.data$primary_period) |>
