@@ -79,18 +79,19 @@
     
 <p>The <code>mrmr2</code> package is designed to simplify and expedite
 mark-recapture data processing, parameter estimation, and visualization
-for a narrow class of mark recapture data (namely, those collected by
+for a narrow class of mark-recapture data (namely, those collected by
 researchers at the <a href="https://mountainlakesresearch.com" class="external-link">Mountain
 Lakes Research Group</a> (University of California, <a href="https://snarl.nrs.ucsb.edu/" class="external-link">Sierra Nevada Aquatic Research
 Laboratory</a>). It extends the original <code>mrmr</code> package with
 optional detection-heterogeneity random effects (see <a href="#detection-re">Detection random-effect models</a>) and a
 lower-memory survival plotting method, and can be installed alongside
-<code>mrmr</code> without conflict.</p>
+<code>mrmr</code> without conflict. <code>mrmr2</code> also incorporates
+numerous code fixes and improved default plots.</p>
 <div class="section level3">
 <h3 id="install-latest-versions-of-cmdstanr-cmdstan-and-mrmr2-packages">Install latest versions of cmdstanr, cmdstan, and mrmr2
 packages<a class="anchor" aria-label="anchor" href="#install-latest-versions-of-cmdstanr-cmdstan-and-mrmr2-packages"></a>
 </h3>
-<p>Run any time; each line below only installs/updates a package if it’s
+<p>The following code chunk only installs/updates a package if it’s
 missing or outdated – an already up-to-date package is left alone.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install/update cmdstanr from its dedicated repository</span></span>
@@ -181,10 +182,9 @@ you would use a path to a local file (real data, not the example data
 included in the package). The capture file must contain, at a minimum,
 <code>pit_tag_id</code> and <code>survey_date</code> columns, but
 additional columns can also be included (e.g., <a href="#survival-covar">survival covariates</a>). Each row in this file
-represents a capture or recapture event, and only live individuals are
-included. Any previously-tagged individuals found dead during during
-surveys can be included in the <code>removal</code> file (see
-below).</p>
+represents a capture event, and only live individuals are included. Any
+previously-tagged individuals found dead during during surveys can be
+included in the <code>removal</code> file (see below).</p>
 <p>The second file specifies survey-level data, and at a minimum it must
 contain <code>survey_date</code>, <code>primary_period</code>, and
 <code>secondary_period</code> columns:</p>
@@ -216,12 +216,13 @@ contain <code>survey_date</code>, <code>primary_period</code>, and
 occurred at the site, these actions need to be included in the
 <code>survey</code> dataset, each as a typical survey event.
 Specifically, <code>survey_date</code> and <code>primary_period</code>
-values are provided, the <code>primary_period</code> is sequential with
-all survey records in the dataset based on <code>visit_date</code>, and
-<code>secondary_period</code> = 0. Translocations/reintroductions cannot
-occur during a primary period. Therefore, the <code>survey_date</code>
-for translocation/reintroduction records cannot overlap with the
-<code>survey_date</code> range of any primary period.</p>
+values are provided, the <code>primary_period</code> value is sequential
+with all survey records in the dataset based on <code>visit_date</code>,
+and <code>secondary_period</code> = 0. Translocations/reintroductions
+cannot occur during a primary period. Therefore, the
+<code>survey_date</code> for translocation/reintroduction records cannot
+overlap with the <code>survey_date</code> range of any primary
+period.</p>
 <p>The third file specifies translocation/reintroduction data, and at a
 minimum it must contain <code>release_date</code> and
 <code>pit_tag_id</code> columns:</p>
@@ -253,15 +254,16 @@ minimum it must contain <code>release_date</code> and
 <span><span class="co">#&gt; $ frog_state   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "healthy"<span style="color: #949494;">, </span>"healthy"<span style="color: #949494;">, </span>"healthy"<span style="color: #949494;">, </span>"healthy"<span style="color: #949494;">, </span>"healthy"<span style="color: #949494;">, </span>"h…</span></span>
 <span><span class="co">#&gt; $ frog_weight  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 11<span style="color: #949494;">, </span>13<span style="color: #949494;">, </span>12<span style="color: #949494;">, </span>10<span style="color: #949494;">, </span>10<span style="color: #949494;">, </span>10<span style="color: #949494;">, </span>11<span style="color: #949494;">, </span>13<span style="color: #949494;">, </span>13<span style="color: #949494;">, </span>11<span style="color: #949494;">, </span>10<span style="color: #949494;">, </span>11<span style="color: #949494;">, </span>11<span style="color: #949494;">, </span>10<span style="color: #949494;">, </span>1…</span></span>
 <span><span class="co">#&gt; $ frog_svl     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 46<span style="color: #949494;">, </span>51<span style="color: #949494;">, </span>44<span style="color: #949494;">, </span>42<span style="color: #949494;">, </span>44<span style="color: #949494;">, </span>40<span style="color: #949494;">, </span>45<span style="color: #949494;">, </span>48<span style="color: #949494;">, </span>49<span style="color: #949494;">, </span>47<span style="color: #949494;">, </span>48<span style="color: #949494;">, </span>47<span style="color: #949494;">, </span>46<span style="color: #949494;">, </span>44<span style="color: #949494;">, </span>4…</span></span></code></pre></div>
-<p>Each row corresponds to an addition event of one unique individual.
-Because some mark-recapture datasets do not include translocations or
+<p>Each row is an addition event of one unique individual. Because some
+mark-recapture datasets do not include translocations or
 reintroductions, this file is optional.</p>
 <p>The fourth file specifies removal data and, at a minimum, contains,
 <code>removal_date</code> and <code>pit_tag_id</code> columns. Each row
-corresponds to a removal event of one unique individual, including
-collection of individuals for translocation to other sites and deaths of
-previously-tagged individuals. Because some mark-recapture datasets do
-not include removals, this file is optional.</p>
+is a removal event of one unique individual, including previously-tagged
+individuals collected for translocation to other sites and
+previously-tagged individuals found dead during surveys. Because some
+mark-recapture datasets do not include removals, this file is
+optional.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">removal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://readr.tidyverse.org/reference/read_delim.html" class="external-link">read_csv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
@@ -297,7 +299,7 @@ arguments to the <code><a href="../reference/clean_data.html">mrmr2::clean_data(
 (translocations or reintroductions, optional), and <code>removals</code>
 (optional). Note that these are the names <code><a href="../reference/clean_data.html">clean_data()</a></code>
 requires for its arguments – they need not match the names you gave your
-own data frames, as in the example below, where the data frame
+own data frames. For example, in the example below, the data frame
 <code>translocation</code> (a name we chose when reading in the file
 above) is passed as <code><a href="../reference/clean_data.html">clean_data()</a></code>’s <code>additions</code>
 argument. <code><a href="../reference/clean_data.html">clean_data()</a></code> determines the role of each input
@@ -305,12 +307,16 @@ solely from these argument names, and will raise an error if any
 argument is passed positionally instead of by name (e.g.,
 <code>capture</code> instead of <code>captures = capture</code>):</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">capture</span>, surveys <span class="op">=</span> <span class="va">survey</span>,</span>
-<span>                   additions <span class="op">=</span> <span class="va">translocation</span>, removals <span class="op">=</span> <span class="va">removal</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span></span>
+<span>  captures <span class="op">=</span> <span class="va">capture</span>, </span>
+<span>  surveys <span class="op">=</span> <span class="va">survey</span>,</span>
+<span>  additions <span class="op">=</span> <span class="va">translocation</span>, </span>
+<span>  removals <span class="op">=</span> <span class="va">removal</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
 <p>In some cases, there may be no introductions or removals of
-individuals into/from a population. The only difference in
-implementation in such cases is that the <code>additions</code> and/or
-<code>removals</code> argument to <code><a href="../reference/clean_data.html">clean_data()</a></code> are
+individuals into/from a population. In such cases, the only difference
+in implementation is that the <code>additions</code> and/or
+<code>removals</code> arguments to <code><a href="../reference/clean_data.html">clean_data()</a></code> are
 omitted.</p>
 <p>The <code>mrmr2:clean_data</code> function performs several
 data-preparation steps. It checks the capture, survey,
@@ -337,17 +343,17 @@ data that has been pre-processed for model fitting.</p>
 </h4>
 <p>Survey-level covariates that might affect the probability of
 detection can be included via the <code>capture_formula</code> argument
-to <code>clean_data</code>. <strong>Note:</strong> it is a good idea to
-ensure that any continuous covariates are rescaled prior to using them
-as covariates to have mean = 0 and unit standard deviation. This can be
-achieved by adding a column to the <code>surveys</code> data. Using a
-covariate value like <code>year</code>, which typically has a mean in
-the thousands and a standard deviation far from one may cause numerical
+to <code>clean_data</code>. Such covariates must be in the
+<code>surveys</code> dataframe. Prior to using a column containing
+continuous values as a covariate, it is important to rescale these
+values to have mean = 0 and standard deviation = 1. Using a covariate
+value like <code>year</code>, which typically has a mean in the
+thousands and a standard deviation far from one may cause numerical
 issues when fitting a model.</p>
-<p><strong>Note:</strong> covariate column names must be unique across
-all data frames supplied to <code><a href="../reference/clean_data.html">clean_data()</a></code>
-(<code>captures</code>, <code>surveys</code>, <code>additions</code>,
-and <code>removals</code>). Internally, <code><a href="../reference/clean_data.html">clean_data()</a></code> joins
+<p>Covariate column names must be unique across all data frames supplied
+to <code><a href="../reference/clean_data.html">clean_data()</a></code> (<code>captures</code>,
+<code>surveys</code>, <code>additions</code>, and
+<code>removals</code>). Internally, <code><a href="../reference/clean_data.html">clean_data()</a></code> joins
 these data frames together using all of their shared column names as the
 join key; if an added covariate shares a name with a column in another
 data frame, it will unexpectedly become part of that join and can
@@ -360,9 +366,12 @@ included as follows:</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>c_survey_duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">survey_duration</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># specify the formula</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">capture</span>, surveys <span class="op">=</span> <span class="va">survey</span>,</span>
-<span>                   additions <span class="op">=</span> <span class="va">translocation</span>,</span>
-<span>                   capture_formula <span class="op">=</span> <span class="op">~</span> <span class="va">c_survey_duration</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span></span>
+<span>  captures <span class="op">=</span> <span class="va">capture</span>, </span>
+<span>  surveys <span class="op">=</span> <span class="va">survey</span>,</span>
+<span>  additions <span class="op">=</span> <span class="va">translocation</span>,</span>
+<span>  capture_formula <span class="op">=</span> <span class="op">~</span> <span class="va">c_survey_duration</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="survival-covar">Including survival covariates<a class="anchor" aria-label="anchor" href="#survival-covar"></a>
@@ -382,24 +391,26 @@ have a recorded value, as well as any real individual whose
 <code>captures</code>/<code>additions</code> records lack the covariate.
 In other words, <code>survival_fill_value</code> should be set to
 whichever level the covariate takes on <em>by default</em>, in the
-absence of an explicit value – not simply whichever group happens to be
-smaller or more notable.</p>
+absence of an explicit value.</p>
 <p>For example, suppose you want to evaluate the effect of an experiment
-on a subset of individuals. In that experiment, a treatment is applied
-to half of the individuals in the subset (“treated”) and the other half
-are “untreated” controls. For individuals that were not part of the
-experiment and for pseudo-individuals, a <code>treatment</code> value is
-absent (<code>NA</code>). Because the pseudo-individuals stand in for
-the general population that might exist but was never observed, and
-because an absent value already means “untreated” for real individuals
-that were not part of the experiment, the fill value should almost
-always be “untreated”:</p>
+that was conducted on a subset of individuals. In that experiment, a
+treatment is applied to half of the individuals in the subset
+(“treated”) and the other half are “untreated” controls. For individuals
+that were not part of the experiment and for pseudo-individuals, a
+<code>treatment</code> value is absent (<code>NA</code>). Because the
+pseudo-individuals stand in for the general population that might exist
+but was never observed, and because an absent value already means
+“untreated” for real individuals that were not part of the experiment,
+the fill value should almost always be “untreated”:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># specify the formula</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span>captures <span class="op">=</span> <span class="va">capture</span>, surveys <span class="op">=</span> <span class="va">survey</span>,</span>
-<span>                   additions <span class="op">=</span> <span class="va">translocation</span>,</span>
-<span>                   survival_formula <span class="op">=</span> <span class="op">~</span> <span class="va">treatment</span>,</span>
-<span>                   survival_fill_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>treatment <span class="op">=</span> <span class="st">"untreated"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span></span>
+<span>  captures <span class="op">=</span> <span class="va">capture</span>, </span>
+<span>  surveys <span class="op">=</span> <span class="va">survey</span>,</span>
+<span>  additions <span class="op">=</span> <span class="va">translocation</span>,</span>
+<span>  survival_formula <span class="op">=</span> <span class="op">~</span> <span class="va">treatment</span>,</span>
+<span>  survival_fill_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>treatment <span class="op">=</span> <span class="st">"untreated"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
 <p>Setting <code>survival_fill_value = c(treatment = "treated")</code>
 would only be appropriate in the reverse situation, where “treated” is
 the default for individuals that were not included in the experiment and
@@ -599,12 +610,13 @@ population, and has random effects to account for variation in survival
 and recruitment through time. It is also possible to add random effects
 to account for <a href="#detection-re">variation in detection</a> at the
 period (<code>primary period</code>), occasion
-(<code>secondary period</code>, and individual level.</p>
+(<code>secondary period</code>), and individual level.</p>
 <p>The default number of chains is 4. Generally, at least 1000 warmup
 and 1000 sampling iterations should be used; the example model below
 uses only 10 iterations of each to ensure a short run time.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="co"># fit-model</span></span>
+<span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
 <span>  chains <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  iter_warmup <span class="op">=</span> <span class="fl">10</span>, </span>
@@ -632,7 +644,8 @@ per chain is set automatically based on the number of cores
 available.</li>
 </ul>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># WARNING: This model run takes 10-20 minutes</span></span>
+<code class="sourceCode R"><span><span class="co"># fit-model-threaded</span></span>
+<span><span class="co"># WARNING: This model run takes 10-20 minutes</span></span>
 <span><span class="va">mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">data</span>, </span>
 <span>  chains <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -642,22 +655,21 @@ available.</li>
 <span>  iter_warmup <span class="op">=</span> <span class="fl">1000</span>, </span>
 <span>  iter_sampling <span class="op">=</span> <span class="fl">1000</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>To diagnose potential non-convergence of the MCMC algorithm, inspect
-traceplots and Rhat values. <code>mod</code> from the
+<p>After the <code><a href="../reference/fit_model.html">mrmr2::fit_model</a></code> step completes, diagnose
+potential non-convergence of the MCMC algorithm by inspecting traceplots
+and Rhat values. Note that <code>mod</code> from the
 <code>fit-model</code> code chunk above is fit with only 10 warmup and
-10 sampling iterations, to keep this vignette’s build fast. As a result
-of the limited number of iterations, its traceplots and Rhat values are
-not informative. To provide more useful diagnostics, the traceplots and
-Rhat table below are based on <code>mod</code> from the
-<code>fit-model-threaded</code> code chunk. To avoid this code chunk’s
-10-20 minute run time, a slightly modified version of the code was
-pre-run and the saved model fit was used to create the traceplots and
-Rhat table.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">bayesplot</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/bayesplot/reference/MCMC-traces.html" class="external-link">mcmc_trace</a></span><span class="op">(</span><span class="va">draws_for_plot</span><span class="op">)</span></span></code></pre></div>
+10 sampling iterations, to minimize the run time of this step. As a
+result of the limited number of iterations, the resulting traceplots and
+Rhat values are not informative. To provide more useful diagnostics, the
+traceplots and Rhat table below are based on <code>mod</code> from the
+<code>fit_model_threaded</code> code chunk immediately above, which is a
+more typical <code>fit_model</code> specification. To avoid this code
+chunk’s 10-20 minute run time, it was pre-run and the saved model fit
+was used to create the traceplots and Rhat table.</p>
 <p><img src="intro-to-mrmr2_files/figure-html/plot-traceplots-prerun-1.png" class="r-plt" alt="" width="672"></p>
-<p>Signs of potential lack of convergence include any moments (like mean
-or standard deviation) changing over time, and high within-chain
+<p>Signs of potential lack of convergence include any moments (e.g.,
+mean or standard deviation) changing over time, and high within-chain
 auto-correlation. High within-chain autocorrelation means the sampler is
 exploring the posterior slowly (poor mixing), which reduces the
 effective sample size relative to the raw number of draws, and shows up
@@ -665,23 +677,22 @@ in a trace plot as slow-moving, snake-like trends rather than a “hairy
 caterpillar” pattern that jumps around its mean quickly. Additionally,
 if multiple chains initialized with different starting values do not
 converge to similar equilibrium values, this may also suggest issues
-with convergence.</p>
+with convergence. These traceplots show typical “hairy caterpillar”
+patterns indicative of model convergence.</p>
 <p>Here is the Rhat table. Rhat values
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mo>≥</mo><annotation encoding="application/x-tex">\ge</annotation></semantics></math>
 1.01 indicate of a lack of convergence.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">posterior</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/posterior/reference/draws_summary.html" class="external-link">summarise_draws</a></span><span class="op">(</span><span class="va">draws_for_plot</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 10</span></span></span>
+<pre><code><span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 10</span></span></span>
 <span><span class="co">#&gt;   variable       mean median     sd    mad     q5    q95  rhat ess_bulk ess_tail</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> alpha_lambda -<span style="color: #BB0000;">4.77</span>  -<span style="color: #BB0000;">4.82</span>  0.611  0.552  -<span style="color: #BB0000;">5.66</span>  -<span style="color: #BB0000;">3.65</span>  1.00     <span style="text-decoration: underline;">1</span>324.    <span style="text-decoration: underline;">1</span>796.</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> sigma_lambda  2.04   1.96  0.596  0.575   1.21   3.16  1.00     <span style="text-decoration: underline;">1</span>465.    <span style="text-decoration: underline;">2</span>477.</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> beta_phi[1]   1.80   1.79  0.361  0.345   1.23   2.39  1.00     <span style="text-decoration: underline;">2</span>293.    <span style="text-decoration: underline;">2</span>195.</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> sigma_phi     1.22   1.17  0.408  0.387   0.640  1.94  1.00     <span style="text-decoration: underline;">1</span>632.    <span style="text-decoration: underline;">2</span>678.</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> beta_detect… -<span style="color: #BB0000;">0.398</span> -<span style="color: #BB0000;">0.398</span> 0.065<span style="text-decoration: underline;">2</span> 0.063<span style="text-decoration: underline;">5</span> -<span style="color: #BB0000;">0.506</span> -<span style="color: #BB0000;">0.293</span> 1.000    <span style="text-decoration: underline;">7</span>004.    <span style="text-decoration: underline;">2</span>820.</span></span></code></pre></div>
-<p>If you run the <code>fit-model-threaded</code> chunk yourself, you
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> beta_detect… -<span style="color: #BB0000;">0.398</span> -<span style="color: #BB0000;">0.398</span> 0.065<span style="text-decoration: underline;">2</span> 0.063<span style="text-decoration: underline;">5</span> -<span style="color: #BB0000;">0.506</span> -<span style="color: #BB0000;">0.293</span> 1.000    <span style="text-decoration: underline;">7</span>004.    <span style="text-decoration: underline;">2</span>820.</span></span></code></pre>
+<p>If you run the <code>fit_model_threaded</code> chunk yourself, you
 can generate the same diagnostics for your fit as follows:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pars_to_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'alpha_lambda'</span>,</span>
 <span>                  <span class="st">'sigma_lambda'</span>,</span>
 <span>                  <span class="st">'beta_phi'</span>,</span>
@@ -689,20 +700,12 @@ can generate the same diagnostics for your fit as follows:</p>
 <span>                  <span class="st">'beta_detect'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">bayesplot</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/bayesplot/reference/MCMC-traces.html" class="external-link">mcmc_trace</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">m_fit</span><span class="op">$</span><span class="fu">draws</span><span class="op">(</span><span class="va">pars_to_plot</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="intro-to-mrmr2_files/figure-html/plot-traceplots-1.png" class="r-plt" alt="" width="672"></p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mod</span><span class="op">$</span><span class="va">m_fit</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span><span class="va">pars_to_plot</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 10</span></span></span>
-<span><span class="co">#&gt;   variable       mean median     sd    mad     q5    q95  rhat ess_bulk ess_tail</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> alpha_lambda -<span style="color: #BB0000;">4.80</span>  -<span style="color: #BB0000;">4.86</span>  0.498  0.499  -<span style="color: #BB0000;">5.47</span>  -<span style="color: #BB0000;">4.03</span>  1.12        20       20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> sigma_lambda  1.96   1.92  0.449  0.462   1.34   2.72  1.28        20       20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> beta_phi[1]   1.78   1.74  0.377  0.302   1.24   2.39  1.03        20       20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> sigma_phi     1.33   1.29  0.552  0.471   0.672  2.25  1.31        20       20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> beta_detect… -<span style="color: #BB0000;">0.396</span> -<span style="color: #BB0000;">0.381</span> 0.062<span style="text-decoration: underline;">9</span> 0.053<span style="text-decoration: underline;">7</span> -<span style="color: #BB0000;">0.512</span> -<span style="color: #BB0000;">0.328</span> 0.991       20       20</span></span></code></pre></div>
-<div class="section level4">
-<h4 id="detection-re">Detection random-effect models<a class="anchor" aria-label="anchor" href="#detection-re"></a>
-</h4>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mod</span><span class="op">$</span><span class="va">m_fit</span><span class="op">$</span><span class="fu">summary</span><span class="op">(</span><span class="va">pars_to_plot</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="detection-re">Detection random-effect models<a class="anchor" aria-label="anchor" href="#detection-re"></a>
+</h3>
 <p>By default (<code>model = "base"</code>), detection probability is a
 purely deterministic function of any covariates supplied via
 <code>capture_formula</code> to <code><a href="../reference/clean_data.html">clean_data()</a></code>. With the
@@ -731,11 +734,14 @@ point estimates of <code>N</code> — chronically hard-to-detect
 individuals get undercounted — matching classical closed-population
 heterogeneity (<code>M_h</code>) theory.</li>
 </ul>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<p>The following code chunk adds an individual-level random effect to
+detection probability</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mod_indiv_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_model.html">fit_model</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">data</span>,</span>
 <span>  model <span class="op">=</span> <span class="st">"indiv_re"</span>,</span>
-<span>  parallel_chains <span class="op">=</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  chains <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  parallel_chains <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  threads_per_chain <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%/%</a></span> <span class="fl">4</span><span class="op">)</span>, </span>
 <span>  cpp_options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>stan_threads <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>  iter_warmup <span class="op">=</span> <span class="fl">1000</span>,</span>
@@ -770,24 +776,23 @@ versus survey-level ambiguity doesn’t bias <code>N</code>,
 only on the sum of the two random effects — but it does mean the two
 <code>sigma</code> estimates shouldn’t be read in isolation.</p>
 <p>Additional details about the <code>detect_re</code> and
-<code>indiv_re</code> models, including runs with simulated and real
-data, are provided in <a href="https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd" class="external-link">An
+<code>indiv_re</code> models, including evaluation of outputs from model
+runs using simulated and real data, are provided in <a href="https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd" class="external-link">An
 Introduction to CMR Analysis Using the mrmr and mrmr2 Packages</a>.</p>
-</div>
 </div>
 <div class="section level3">
 <h3 id="built-in-visualizations">Built-in visualizations<a class="anchor" aria-label="anchor" href="#built-in-visualizations"></a>
 </h3>
-<p>Time series of abundance, recruitment, and survival of introduced
-cohorts are available through the <code><a href="../reference/plot_model.html">mrmr2::plot_model()</a></code>
-function.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<p>Time series of population abundance, recruitment, and survival of
+introduced cohorts are available through the
+<code><a href="../reference/plot_model.html">mrmr2::plot_model()</a></code> function.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">'abundance'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="intro-to-mrmr2_files/figure-html/plot-abundance-1.png" class="r-plt" alt="" width="672"></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">'recruitment'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="intro-to-mrmr2_files/figure-html/plot-recruitment-1.png" class="r-plt" alt="" width="672"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">'survival'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="intro-to-mrmr2_files/figure-html/plot-survival-1.png" class="r-plt" alt="" width="672"></p>
 <p><code>what = 'survival'</code> only pulls posterior draws of the
@@ -806,24 +811,27 @@ details).</p>
 </h3>
 <p>The default plots can be customized using standard plotting
 functions:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">"abundance"</span><span class="op">)</span> </span>
-<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="va">p1</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"A. Population size"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"Number of adults"</span><span class="op">)</span> <span class="op">+</span> </span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expand_limits.html" class="external-link">expand_limits</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="va">p1</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"A. Population size"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"Number of adults"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/expand_limits.html" class="external-link">expand_limits</a></span><span class="op">(</span>y <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  </span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">"recruitment"</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="va">p2</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"B. Recruitment"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"Number of adults"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"Number of adults"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">"survival"</span><span class="op">)</span></span>
 <span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="va">p3</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"C. Survival of Translocated Cohorts"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"Number of adults"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ylab</a></span><span class="op">(</span><span class="st">"Number of adults"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>  </span>
 <span><span class="va">p1</span> <span class="op">/</span> <span class="va">p2</span> <span class="op">/</span><span class="va">p3</span></span></code></pre></div>
 <p><img src="intro-to-mrmr2_files/figure-html/plots-custom-1.png" class="r-plt" alt="" width="672"></p>
-<p>To save the custom plots (.png, .pdf, etc.):</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<p>To save the custom plots (in .png, .pdf, and other formats):</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="st">"custom_plots.png"</span>, height <span class="op">=</span> <span class="fl">6.5</span>, width <span class="op">=</span> <span class="fl">6.5</span><span class="op">)</span></span></code></pre></div>
 <div class="section level4">
 <h4 id="plotting-other-parameters">Plotting other parameters<a class="anchor" aria-label="anchor" href="#plotting-other-parameters"></a>
@@ -832,7 +840,7 @@ functions:</p>
 <code>stanfit</code> model is available, by accessing the
 <code>m_fit</code> list element from a model object. For example, we
 could assess the posterior for the superpopulation size:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">bayesplot</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/bayesplot/reference/MCMC-traces.html" class="external-link">mcmc_trace</a></span><span class="op">(</span><span class="va">mod</span><span class="op">$</span><span class="va">m_fit</span><span class="op">$</span><span class="fu">draws</span><span class="op">(</span><span class="st">"Nsuper"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>See <a href="#model-structure">Model structure</a> for parameter
 names and definitions.</p>
@@ -842,23 +850,9 @@ names and definitions.</p>
 <h3 id="translocationreintroduction-survival-tables">Translocation/reintroduction survival tables<a class="anchor" aria-label="anchor" href="#translocationreintroduction-survival-tables"></a>
 </h3>
 <p>If individuals were added to sites, you can generate a table of
-estimated survival through time for each cohort (release date) as a
-function of years since introduction:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_table.html">survival_table</a></span><span class="op">(</span><span class="va">mod</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 5</span></span></span>
-<span><span class="co">#&gt;   years_since_introduction release_date lo_survival median_survival hi_survival</span></span>
-<span><span class="co">#&gt;                      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>                        0 2014-06-28        0.607           0.63        0.654 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>                        0 2017-08-09        0.867           0.933       1     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>                        1 2014-06-28        0.347           0.36        0.380 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>                        1 2017-08-09        0.516           0.567       0.684 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                        2 2014-06-28        0.17            0.175       0.185 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                        3 2014-06-28        0.086<span style="text-decoration: underline;">7</span>          0.093<span style="text-decoration: underline;">3</span>      0.107 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                        4 2014-06-28        0.07            0.08        0.090<span style="text-decoration: underline;">2</span></span></span></code></pre></div>
-<p>You can also get estimates of survival through time by individual or
-cohort:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+estimated survival through time for each introduced cohort (release
+date) as a function of years since introduction:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_table.html">survival_table</a></span><span class="op">(</span><span class="va">mod</span>, by_cohort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 7 × 5</span></span></span>
 <span><span class="co">#&gt;   years_since_introduction release_date lo_survival median_survival hi_survival</span></span>
@@ -870,7 +864,9 @@ cohort:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>                        2 2014-06-28        0.17            0.175       0.185 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span>                        3 2014-06-28        0.086<span style="text-decoration: underline;">7</span>          0.093<span style="text-decoration: underline;">3</span>      0.107 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span>                        4 2014-06-28        0.07            0.08        0.090<span style="text-decoration: underline;">2</span></span></span></code></pre></div>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<p>You can also get estimates of survival through time by
+individual:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/survival_table.html">survival_table</a></span><span class="op">(</span><span class="va">mod</span>, by_individual <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 310 × 6</span></span></span>
 <span><span class="co">#&gt;    years_since_introduction release_date pit_tag_id  lo_survival median_survival</span></span>
