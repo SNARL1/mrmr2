@@ -252,16 +252,14 @@ Individual-level survival covariates can be included via the
 named in `survival_formula` must be a column in `captures` or
 `additions` -- these are the only two places `clean_data()` looks for
 individual-level values -- and must be fixed for each individual over
-the entire study.
-
-Both arguments must be specified together, because `survival_fill_value`
-supplies the covariate value for every individual the data says nothing
-about: the (typically numerous) augmented pseudo-individuals, which were
-never captured and so can never have a recorded value, as well as any
-real individual whose `captures`/`additions` records lack the covariate.
-In other words, `survival_fill_value` should be set to whichever level
-the covariate takes on *by default*, in the absence of an explicit
-value.
+the entire study. The arguments must be specified together, because
+`survival_fill_value` supplies the covariate value for every individual
+the data says nothing about: the (typically numerous) augmented
+pseudo-individuals, which were never captured and so can never have a
+recorded value, and any real individual whose `captures`/`additions`
+records lack the covariate. In other words, `survival_fill_value` should
+be set to whichever level the covariate takes on *by default*, in the
+absence of an explicit value.
 
 For example, suppose you want to evaluate the effect of an experiment
 that was conducted on a subset of individuals. In that experiment, a
@@ -289,6 +287,17 @@ Setting `survival_fill_value = c(treatment = "treated")` would only be
 appropriate in the reverse situation, where "treated" is the default for
 individuals that were not included in the experiment and for the control
 individuals.
+
+Pseudo-individuals make some survival covariates hard to include,
+specifically when the covariate value assigned to a pseudo-individual
+(via the `survival_fill_value`) is ambiguous. For example, adding a
+`sex` covariate requires assigning a sex to every pseudo-individual, but
+what sex to assign is ambiguous. One approach is to assign sex based on
+sampling sex from the observed sex ratio, but this assumes that the
+sexes have equal detectability. If this assumption is violated,
+estimates will likely be biased. Given these challenges, the best
+approach is include only covariates for which the `survival_fill_value`
+is unambiguous (see example above).
 
 ## Model structure {#model-structure}
 
