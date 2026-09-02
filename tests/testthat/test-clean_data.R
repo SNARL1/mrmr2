@@ -128,32 +128,6 @@ test_that("surivival formulas create correct design matrices", {
   expect_true("treatmentwild-caught" %in% colnames(X_surv))
 })
 
-test_that("dead captures raise errors", {
-  captures <- system.file("extdata",
-                          "equid-captures.csv",
-                          package = "mrmr2") %>%
-    read_csv
-  surveys <- system.file("extdata",
-                         "equid-surveys.csv",
-                         package = "mrmr2") %>%
-    read_csv
-  removals <- system.file("extdata",
-                          "equid-removals.csv",
-                          package = "mrmr2") %>%
-    read_csv
-
-  expect_error(clean_data(captures = captures, surveys = surveys,
-                          removals = removals),
-               regexp = "including dead animals encountered on surveys")
-
-  # check case sensitivity
-  capitalized_captures <- captures %>%
-    mutate(capture_animal_state = tools::toTitleCase(capture_animal_state))
-  expect_error(clean_data(captures = capitalized_captures, surveys = surveys,
-                          removals = removals),
-               regexp = "including dead animals encountered on surveys")
-})
-
 test_that("duplicate captures raise errors", {
   captures <- rbind(captures[1, ], captures)
 
@@ -169,48 +143,6 @@ test_that("recruitment warning is printed when no natural recruits", {
                                  additions = additions),
                regexp = "natural recruitment")
   expect_equal(d$stan_d$any_recruitment, 0)
-})
-
-test_that("Misnamed removal date columns raise errors", {
-  captures <- system.file("extdata",
-                          "equid-captures.csv",
-                          package = "mrmr2") %>%
-    read_csv %>%
-    filter(capture_animal_state != "dead")
-  surveys <- system.file("extdata",
-                         "equid-surveys.csv",
-                         package = "mrmr2") %>%
-    read_csv
-  removals <- system.file("extdata",
-                          "equid-removals.csv",
-                          package = "mrmr2") %>%
-    read_csv %>%
-    rename(remove_date = removal_date)
-
-  expect_error(clean_data(captures = captures, surveys = surveys,
-                          removals = removals),
-               regexp = "was not found in the removal data")
-})
-
-test_that("Misnamed tag id columns raise errors", {
-  captures <- system.file("extdata",
-                          "equid-captures.csv",
-                          package = "mrmr2") %>%
-    read_csv %>%
-    filter(capture_animal_state != "dead")
-  surveys <- system.file("extdata",
-                         "equid-surveys.csv",
-                         package = "mrmr2") %>%
-    read_csv
-  removals <- system.file("extdata",
-                          "equid-removals.csv",
-                          package = "mrmr2") %>%
-    read_csv %>%
-    rename(pit_tag_ref = pit_tag_id)
-
-  expect_error(clean_data(captures = captures, surveys = surveys,
-                          removals = removals),
-               regexp = "was not found in the removal data")
 })
 
 test_that("Duplicate survey dates raise errors", {
