@@ -625,30 +625,29 @@ memory use for this plot far below what it would be if the full `s`
 array were pulled and then filtered down afterward (see [An Introduction
 to CMR Analysis Using the mrmr and mrmr2
 Packages](https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd)
-for details). `what = 'f_survival'` plots the cumulative fraction of
-each translocated or reintroduced cohort estimated to still be alive as
-a function of time since release, so it requires addition data and only
-describes those individuals.
+for details).
+
+`what = 'f_survival'` plots the cumulative fraction of each translocated
+or reintroduced cohort estimated to still be alive as a function of time
+since release, so it requires addition data and only describes those
+individuals (i.e., resident individuals are ignored).
 
 ```{r plot-survival}
 plot_model(mod, what = 'f_survival')
 ```
 
-`what = 'p_survival'` plots the period-to-period probability that an
-individual alive in one primary period is still alive in the next, for
-all individuals in the population, without the cumulative averaging.
-
 `what = 'p_survival'` plots the estimated period-to-period survival
 probability for all individuals in the population -- the probability
 that an individual alive in one primary period is still alive in the
-next. Unlike `what = 'f_survival'`, which shows the cumulative fraction
-of each cohort still alive since its release date, this statistic is not
-cumulative from a fixed start date, so it stays directly comparable
-across groups regardless of how long each has been tracked. Because
-`mod` was fit without a `survival_formula`, the model estimates a
-single, population-wide survival probability for each primary period,
-shared by every individual -- so `what = 'p_survival'` plots one
-ungrouped line:
+next. Each point is dated at the *arrival* primary period rather than
+the departure one, so it reads as the probability of having survived
+from the previous primary period to this one. For example, an overwinter
+transition (survival from the last primary period of year 1 to the first
+primary period of year 2) is attributed to the first primary period of
+year 2, not the last primary period of year 1. Because `mod` was fit
+without a `survival_formula`, the model estimates a single,
+population-wide survival probability for each primary period, shared by
+every individual -- so `what = 'p_survival'` plots one ungrouped line:
 
 ```{r plot-p-survival}
 plot_model(mod, what = 'p_survival')
@@ -656,34 +655,35 @@ plot_model(mod, what = 'p_survival')
 
 If the model was instead fit with a `survival_formula` (see [Including
 survival covariates](#survival-covar)), `what = 'p_survival'` plots one
-line per covariate category, so groups can only appear on this plot if
-the model actually distinguishes them. For example, to compare survival
-between translocated and resident individuals, fit a model with a
-survival covariate that labels each individual by subpopulation type.
-Because the label depends on translocation status, it needs to be added
-to both `capture` and `translocation` -- some translocated individuals
-are never recaptured, so they have no row in `capture` to carry the
-label:
+line per covariate category. For example, to compare survival between
+translocated and resident individuals, fit a model with a survival
+covariate that labels each individual by subpopulation type.
+`what= 'p_survival'` now plots a line for each group - translocated and
+resident. In this example, note that if some translocated individuals
+are never captured following release, they would have no row in
+`capture` to indicate their group label (i.e., as translocated).
+Therefore, in this case, the group column needs to be added to both the
+`capture` and `translocation` dataframes.
 
 ```{r survival-covariate-added-resident, message=FALSE, eval=FALSE}
 capture <- capture |>
-  mutate(status = ifelse(pit_tag_id %in% translocation$pit_tag_id,
-                          "added", "resident"))
+  mutate(group = ifelse(pit_tag_id %in% translocation$pit_tag_id,
+                          "tranlocated", "resident"))
 translocation <- translocation |>
-  mutate(status = "added")
+  mutate(group = "translocated")
 
 data <- clean_data(
   captures = capture,
   surveys = survey,
   additions = translocation,
-  survival_formula = ~ status,
+  survival_formula = ~ group,
   survival_fill_value = c(status = "resident")
   )
 ```
 
 With this model, `plot_model(mod, what = 'p_survival')` plots one line
-per `status` category (added vs. resident), reflecting the model's own
-`status` coefficient in `beta_phi`, rather than an assumed grouping.
+per `group` category (translocated vs. resident), reflecting the model's
+own `group` coefficient in `beta_phi`, rather than an assumed grouping.
 
 ## Custom visualizations
 
