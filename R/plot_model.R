@@ -115,8 +115,8 @@ plot_model <- function(model, what) {
       geom_line() +
       ylab('Fraction surviving') +
       xlab('Date') +
-      scale_color_brewer('Introduction date', type = 'qual') +
-      scale_fill_brewer('Introduction date', type = 'qual') +
+      scale_color_brewer('Introduction date', type = 'qual', palette = 'Dark2') +
+      scale_fill_brewer('Introduction date', type = 'qual', palette = 'Dark2') +
       facet_wrap(~.data$year, nrow = 1, scales = 'free_x') +
       theme(axis.text.x = element_text(angle = 90),
             legend.position = "top")
@@ -179,10 +179,10 @@ plot_model <- function(model, what) {
       geom_point() +
       geom_line() +
       ylim(0, 1) +
-      ylab('Probability of survival to next primary period') +
+      ylab('Probability of survival\nto next primary period') +
       xlab('Date') +
-      scale_color_brewer('Group', type = 'qual', palette = 'Set1') +
-      scale_fill_brewer('Group', type = 'qual', palette = 'Set1') +
+      scale_color_brewer('Group', type = 'qual', palette = 'Dark2') +
+      scale_fill_brewer('Group', type = 'qual', palette = 'Dark2') +
       facet_wrap(~.data$year, nrow = 1, scales = 'free_x') +
       theme(axis.text.x = element_text(angle = 90),
             legend.position = "top")
