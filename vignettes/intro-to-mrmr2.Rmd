@@ -664,17 +664,20 @@ p1 <- plot_model(mod, what = "abundance")
 p1 <- p1 + ggtitle("A. Population size") + 
   ylab("Number of adults") + 
   expand_limits(y = 0) +
-  theme_classic()
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90))
   
 p2 <- plot_model(mod, what = "recruitment")
 p2 <- p2 + ggtitle("B. Recruitment") +
   ylab("Number of adults") +
-  theme_classic()
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90))
 
 p3 <- plot_model(mod, what = "f_survival")
 p3 <- p3 + ggtitle("C. Survival of Translocated Cohorts") +
   ylab("Number of adults") + 
-  theme_classic()
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90))
   
 p1 / p2 /p3
 ```
