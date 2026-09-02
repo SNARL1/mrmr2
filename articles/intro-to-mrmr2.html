@@ -864,7 +864,7 @@ case, the group column needs to be added to both the
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">capture</span> <span class="op">&lt;-</span> <span class="va">capture</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">pit_tag_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">translocation</span><span class="op">$</span><span class="va">pit_tag_id</span>,</span>
-<span>                          <span class="st">"tranlocated"</span>, <span class="st">"resident"</span><span class="op">)</span><span class="op">)</span></span>
+<span>                          <span class="st">"translocated"</span>, <span class="st">"resident"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">translocation</span> <span class="op">&lt;-</span> <span class="va">translocation</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>group <span class="op">=</span> <span class="st">"translocated"</span><span class="op">)</span></span>
 <span></span>
@@ -873,7 +873,7 @@ case, the group column needs to be added to both the
 <span>  surveys <span class="op">=</span> <span class="va">survey</span>,</span>
 <span>  additions <span class="op">=</span> <span class="va">translocation</span>,</span>
 <span>  survival_formula <span class="op">=</span> <span class="op">~</span> <span class="va">group</span>,</span>
-<span>  survival_fill_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>status <span class="op">=</span> <span class="st">"resident"</span><span class="op">)</span></span>
+<span>  survival_fill_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>group <span class="op">=</span> <span class="st">"resident"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p>With this model, <code>plot_model(mod, what = 'p_survival')</code>
 plots one line per <code>group</code> category (translocated
