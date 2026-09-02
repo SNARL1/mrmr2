@@ -584,39 +584,68 @@ Time series of population abundance, recruitment, and survival of
 introduced cohorts are available through the `mrmr2::plot_model()`
 function.
 
+### Population size
+
+This plot shows the estimated total population size -- the number of
+individuals in the "alive" latent state -- at each primary period,
+summarized as a posterior median with a 95% credible interval band. It
+uses posterior draws of the derived quantity `N`, computed from the
+model's latent state draws (`s`) for every individual (real and
+data-augmented), since some individuals present in the population are
+never captured. If translocation or reintroduction data are present,
+dashed vertical lines mark when and how many individuals were added,
+distinguishing external additions from in-population recruitment.
+
 ```{r plot-abundance}
 plot_model(mod, what = 'abundance')
 ```
+
+### Recruitment
+
+This plot shows the estimated number of individuals newly entering the
+"alive" state (recruited into the population, whether through
+in-population reproduction or translocation) at each primary period,
+summarized as a posterior median with a 95% credible interval band. It
+uses posterior draws of the derived quantity `B`, computed from
+transitions in the model's latent state draws (`s`) between consecutive
+primary periods. As with the population size plot, dashed vertical lines
+mark translocation/reintroduction dates when addition data are present.
 
 ```{r plot-recruitment}
 plot_model(mod, what = 'recruitment')
 ```
 
+### Survival
+
+`mrmr2` provides two survival plot types, both computed from posterior
+draws of the latent state `s` restricted to real (non-augmented)
+individuals. For sites with a large superpopulation relative to the
+number of added (translocated/reintroduced) individuals, this keeps
+memory use for this plot far below what it would be if the full `s`
+array were pulled and then filtered down afterward (see [An Introduction
+to CMR Analysis Using the mrmr and mrmr2
+Packages](https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd)
+for details). `what = 'f_survival'` plots the cumulative fraction of
+each translocated or reintroduced cohort estimated to still be alive as
+a function of time since release, so it requires addition data and only
+describes those individuals.
+
 ```{r plot-survival}
 plot_model(mod, what = 'f_survival')
 ```
 
-`what = 'f_survival'` only pulls posterior draws of the latent state
-(`s`) for translocated individuals, rather than for every individual
-(real and data-augmented pseudo-individual) tracked by the model
-(behavior of `what = 'survival'` in `mrmr`). On sites with a large
-superpopulation relative to the number of translocated individuals, this
-keeps memory use for this plot far below what it would be if the full
-`s` array were pulled and then filtered down afterward (see [An
-Introduction to CMR Analysis Using the mrmr and mrmr2
-Packages](https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd)
-for details).
+`what = 'p_survival'` plots the period-to-period probability that an
+individual alive in one primary period is still alive in the next, for
+all individuals in the population, without the cumulative averaging.
 
-`what = 'p_survival'` instead plots the estimated period-to-period
-survival probability for all individuals in the population -- the
-probability that an individual alive in one primary period is still
-alive in the next. Unlike `what = 'f_survival'`, which shows the
-cumulative fraction of each cohort still alive since its release date,
-this statistic is not cumulative from a fixed start date, so it stays
-directly comparable across groups regardless of how long each has been
-tracked.
-
-Because `mod` was fit without a `survival_formula`, the model estimates a
+`what = 'p_survival'` plots the estimated period-to-period survival
+probability for all individuals in the population -- the probability
+that an individual alive in one primary period is still alive in the
+next. Unlike `what = 'f_survival'`, which shows the cumulative fraction
+of each cohort still alive since its release date, this statistic is not
+cumulative from a fixed start date, so it stays directly comparable
+across groups regardless of how long each has been tracked. Because
+`mod` was fit without a `survival_formula`, the model estimates a
 single, population-wide survival probability for each primary period,
 shared by every individual -- so `what = 'p_survival'` plots one
 ungrouped line:
