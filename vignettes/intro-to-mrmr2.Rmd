@@ -324,38 +324,46 @@ For reference, the parameters estimated by the model are as follows:
   table-layout: fixed;
   width: 100%;
 }
-.param-table col:nth-child(2), .param-table col:nth-child(3) {
-  width: 8%;
+.param-table col:nth-child(2) {
+  width: 14%;
+}
+.param-table col:nth-child(3) {
+  width: 12%;
 }
 .param-table col:nth-child(4) {
-  width: 55%;
+  width: 47%;
 }
 </style>
+<div class="param-table">
+<table>
+<colgroup><col><col><col><col></colgroup>
+<thead>
+<tr><th>Parameter</th><th>Symbol</th><th>Model</th><th>Definition</th></tr>
+</thead>
+<tbody>
+<tr><td><code>alpha_lambda</code></td><td>\(\alpha_\lambda\)</td><td>all</td><td>Intercept of per-primary-period recruitment probability, on the logit scale</td></tr>
+<tr><td><code>sigma_lambda</code></td><td>\(\sigma_\lambda\)</td><td>all</td><td>Standard deviation of the recruitment random effect (<code>eps_lambda</code>) across primary periods</td></tr>
+<tr><td><code>eps_lambda</code></td><td>\(\epsilon_\lambda\)</td><td>all</td><td>Standardized per-primary-period random effect on recruitment probability</td></tr>
+<tr><td><code>lambda</code></td><td>\(\lambda\)</td><td>all</td><td>Probability that an as-yet-unrecruited individual is recruited during a given primary period</td></tr>
+<tr><td><code>beta_phi</code></td><td>\(\beta_\phi\)</td><td>all</td><td>Coefficients (intercept and any survival covariates) for survival probability, on the logit scale</td></tr>
+<tr><td><code>sigma_phi</code></td><td>\(\sigma_\phi\)</td><td>all</td><td>Standard deviation of the survival random effect (<code>eps_phi</code>) across primary periods</td></tr>
+<tr><td><code>eps_phi</code></td><td>\(\epsilon_\phi\)</td><td>all</td><td>Per-primary-period random effect on survival probability</td></tr>
+<tr><td><code>phi</code></td><td>\(\phi\)</td><td>all</td><td>Probability that an alive individual survives from one primary period to the next</td></tr>
+<tr><td><code>beta_detect</code></td><td>\(\beta_p\)</td><td>all</td><td>Coefficients (intercept and any detection covariates) for detection probability, on the logit scale</td></tr>
+<tr><td><code>sigma_detect_period</code></td><td>\(\sigma_{p,\text{period}}\)</td><td><code>detect_re</code></td><td>Standard deviation of the between-primary-period detection random effect (<code>eps_detect_period</code>)</td></tr>
+<tr><td><code>eps_detect_period</code></td><td>\(\epsilon_{p,\text{period}}\)</td><td><code>detect_re</code></td><td>Per-primary-period random effect on detection probability, shared by all surveys in that period</td></tr>
+<tr><td><code>sigma_detect_occasion</code></td><td>\(\sigma_{p,\text{occasion}}\)</td><td><code>detect_re</code></td><td>Standard deviation of the within-primary-period (per-survey) detection random effect (<code>eps_detect_occasion</code>)</td></tr>
+<tr><td><code>eps_detect_occasion</code></td><td>\(\epsilon_{p,\text{occasion}}\)</td><td><code>detect_re</code></td><td>Per-survey random effect on detection probability, nested within primary period</td></tr>
+<tr><td><code>sigma_detect_indiv</code></td><td>\(\sigma_{p,\text{indiv}}\)</td><td><code>indiv_re</code></td><td>Standard deviation of the individual-level detection random effect (<code>eps_detect_indiv</code>)</td></tr>
+<tr><td><code>eps_detect_indiv</code></td><td>\(\epsilon_{p,\text{indiv}}\)</td><td><code>indiv_re</code></td><td>Per-individual random effect on detection probability (individual detection heterogeneity, \(M_h\))</td></tr>
+<tr><td><code>s</code></td><td>\(s\)</td><td>all</td><td>Latent state of each individual (not yet recruited, alive, or dead) in each primary period</td></tr>
+<tr><td><code>N</code></td><td>\(N\)</td><td>all</td><td>Estimated population size (number of "alive" individuals) in each primary period</td></tr>
+<tr><td><code>B</code></td><td>\(B\)</td><td>all</td><td>Estimated number of newly recruited individuals in each primary period</td></tr>
+<tr><td><code>Nsuper</code></td><td>\(N_{super}\)</td><td>all</td><td>Estimated superpopulation size: the total number of individuals ever alive during the study</td></tr>
+</tbody>
+</table>
+</div>
 ```
-
-::: param-table
-| Parameter | Symbol | Model | Definition |
-|------------------|------------------|------------------|------------------|
-| `alpha_lambda` | $\alpha_\lambda$ | all | Intercept of per-primary-period recruitment probability, on the logit scale |
-| `sigma_lambda` | $\sigma_\lambda$ | all | Standard deviation of the recruitment random effect (`eps_lambda`) across primary periods |
-| `eps_lambda` | $\epsilon_\lambda$ | all | Standardized per-primary-period random effect on recruitment probability |
-| `lambda` | $\lambda$ | all | Probability that an as-yet-unrecruited individual is recruited during a given primary period |
-| `beta_phi` | $\beta_\phi$ | all | Coefficients (intercept and any survival covariates) for survival probability, on the logit scale |
-| `sigma_phi` | $\sigma_\phi$ | all | Standard deviation of the survival random effect (`eps_phi`) across primary periods |
-| `eps_phi` | $\epsilon_\phi$ | all | Per-primary-period random effect on survival probability |
-| `phi` | $\phi$ | all | Probability that an alive individual survives from one primary period to the next |
-| `beta_detect` | $\beta_p$ | all | Coefficients (intercept and any detection covariates) for detection probability, on the logit scale |
-| `sigma_detect_period` | $\sigma_{p,\text{period}}$ | `detect_re` | Standard deviation of the between-primary-period detection random effect (`eps_detect_period`) |
-| `eps_detect_period` | $\epsilon_{p,\text{period}}$ | `detect_re` | Per-primary-period random effect on detection probability, shared by all surveys in that period |
-| `sigma_detect_occasion` | $\sigma_{p,\text{occasion}}$ | `detect_re` | Standard deviation of the within-primary-period (per-survey) detection random effect (`eps_detect_occasion`) |
-| `eps_detect_occasion` | $\epsilon_{p,\text{occasion}}$ | `detect_re` | Per-survey random effect on detection probability, nested within primary period |
-| `sigma_detect_indiv` | $\sigma_{p,\text{indiv}}$ | `indiv_re` | Standard deviation of the individual-level detection random effect (`eps_detect_indiv`) |
-| `eps_detect_indiv` | $\epsilon_{p,\text{indiv}}$ | `indiv_re` | Per-individual random effect on detection probability (individual detection heterogeneity, $M_h$) |
-| `s` | $s$ | all | Latent state of each individual (not yet recruited, alive, or dead) in each primary period |
-| `N` | $N$ | all | Estimated population size (number of "alive" individuals) in each primary period |
-| `B` | $B$ | all | Estimated number of newly recruited individuals in each primary period |
-| `Nsuper` | $N_{super}$ | all | Estimated superpopulation size: the total number of individuals ever alive during the study |
-:::
 
 ## Model fitting
 
