@@ -67,7 +67,7 @@
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>What to plot. Must be a character string of either
-"abundance", "recruitment", "f_survival", or "p_survival".</p></dd>
+"abundance", "recruitment", "f_survival", "p_survival", or "detection".</p></dd>
 
 </dl></div>
     <div id="value">
@@ -103,6 +103,26 @@ ungrouped line is plotted for the whole population – any apparent
 difference between subgroups (e.g. added vs. resident individuals) is
 not something the model actually estimated unless a covariate
 distinguishing them was included.</p>
+<p><code>what = "detection"</code> plots the estimated probability of detection
+at each primary period. Unlike <code>what = "f_survival"</code> and
+<code>what = "p_survival"</code>, this is read directly from the saved
+<code>logit_detect</code> transformed parameter (which already includes the
+<code>"detect_re"</code> model's between-period and within-period random
+effects, where present) rather than from posterior draws of <code>s</code>.
+<code>what = "detection"</code> only supports models fit without detection
+covariates (<code>capture_formula = ~ 1</code>) and errors otherwise:
+detection covariates in <code>X_detect</code> vary by survey occasion, often
+continuously (e.g. survey duration), rather than by a small number of
+individual-level categories the way survival covariates do, so grouped
+lines analogous to <code>what = "p_survival"</code> would not generally make
+sense. For <code>model = "base"</code> and <code>"detect_re"</code> fits, a single
+line is plotted (constant for <code>"base"</code>, varying by primary period
+for <code>"detect_re"</code>). For <code>model = "indiv_re"</code> fits, since its
+individual-level detection random effect (<code>eps_detect_indiv</code>) has
+no time index, a second, wider background ribbon is added showing the
+spread of individual-level detection probabilities pooled across real
+individuals and posterior draws – flat across primary periods, since
+it reflects between-individual heterogeneity rather than a time trend.</p>
     </div>
 
     <div id="ref-examples">
