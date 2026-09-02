@@ -35,13 +35,19 @@ individuals.
 \code{what = "p_survival"} instead plots the estimated period-to-period
 survival probability (the probability that an individual alive in one
 primary period is still alive in the next) for all real individuals in
-the population, split into two lines: individuals present in the
-addition data (translocated or reintroduced), and resident individuals
-recruited into the population without translocation. Unlike
-\code{what = "f_survival"}, this statistic is not cumulative, so it stays
-directly comparable between added and resident individuals regardless of
-how long each has been tracked. If no addition data are present, only
-the resident line is shown.
+the population. Unlike \code{what = "f_survival"}, this statistic is not
+cumulative from a fixed start date, so it stays directly comparable
+across groups regardless of how long each has been tracked. If the model
+was fit with a \code{survival_formula} (see the \code{survival_formula}
+and \code{survival_fill_value} arguments to \code{\link{clean_data}}),
+one line is plotted per covariate category (categories from multiple
+covariates are combined); this assumes survival covariates are
+categorical, which \code{survival_fill_value}'s requirements already
+push users toward. If no survival covariates were fit, a single,
+ungrouped line is plotted for the whole population -- any apparent
+difference between subgroups (e.g. added vs. resident individuals) is
+not something the model actually estimated unless a covariate
+distinguishing them was included.
 }
 \examples{
 \dontrun{

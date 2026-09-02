@@ -607,33 +607,34 @@ Introduction to CMR Analysis Using the mrmr and mrmr2
 Packages](https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd)
 for details).
 
-`what = 'p_survival'` instead plots survival probability for *all*
-individuals in the population, split into two lines: individuals present
-in the addition data (translocated or reintroduced) and resident
-individuals recruited into the population without translocation. Unlike
-`what = 'f_survival'`, which shows the cumulative fraction of each
-cohort still alive since its release date, `what = 'p_survival'` plots
-the period-to-period survival probability -- the probability that an
-individual alive in one primary period is still alive in the next. This
-keeps the added and resident lines directly comparable at any shared
-date, regardless of how long each group has been tracked.
+`what = 'p_survival'` instead plots the estimated period-to-period
+survival probability for all individuals in the population -- the
+probability that an individual alive in one primary period is still
+alive in the next. Unlike `what = 'f_survival'`, which shows the
+cumulative fraction of each cohort still alive since its release date,
+this statistic is not cumulative from a fixed start date, so it stays
+directly comparable across groups regardless of how long each has been
+tracked.
+
+Because `mod` was fit without a `survival_formula`, the model estimates a
+single, population-wide survival probability for each primary period,
+shared by every individual -- so `what = 'p_survival'` plots one
+ungrouped line:
 
 ```{r plot-p-survival}
 plot_model(mod, what = 'p_survival')
 ```
 
-By default, `mrmr2` fits a single, population-wide survival probability
-for each primary period, shared by every individual regardless of
-whether they were added or resident. Any visual gap between the two
-lines above is therefore not evidence of a real difference in survival
--- it reflects which individuals happened to be observed, not something
-the model actually estimated. To test whether added and resident
-individuals differ in survival, fit a model with a survival covariate
-that labels each individual by subpopulation type, following the pattern
-in [Including survival covariates](#survival-covar). Because the label
-depends on translocation status, it needs to be added to both `capture`
-and `translocation` -- some translocated individuals are never
-recaptured, so they have no row in `capture` to carry the label:
+If the model was instead fit with a `survival_formula` (see [Including
+survival covariates](#survival-covar)), `what = 'p_survival'` plots one
+line per covariate category, so groups can only appear on this plot if
+the model actually distinguishes them. For example, to compare survival
+between translocated and resident individuals, fit a model with a
+survival covariate that labels each individual by subpopulation type.
+Because the label depends on translocation status, it needs to be added
+to both `capture` and `translocation` -- some translocated individuals
+are never recaptured, so they have no row in `capture` to carry the
+label:
 
 ```{r survival-covariate-added-resident, message=FALSE, eval=FALSE}
 capture <- capture |>
@@ -651,9 +652,9 @@ data <- clean_data(
   )
 ```
 
-With this model, `plot_model(mod, what = 'p_survival')` reflects an
-actual estimated difference between added and resident survival (via the
-`status` coefficient in `beta_phi`), rather than noise.
+With this model, `plot_model(mod, what = 'p_survival')` plots one line
+per `status` category (added vs. resident), reflecting the model's own
+`status` coefficient in `beta_phi`, rather than an assumed grouping.
 
 ## Custom visualizations
 

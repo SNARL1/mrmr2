@@ -20,13 +20,19 @@
 #' \code{what = "p_survival"} instead plots the estimated period-to-period
 #' survival probability (the probability that an individual alive in one
 #' primary period is still alive in the next) for all real individuals in
-#' the population, split into two lines: individuals present in the
-#' addition data (translocated or reintroduced), and resident individuals
-#' recruited into the population without translocation. Unlike
-#' \code{what = "f_survival"}, this statistic is not cumulative, so it stays
-#' directly comparable between added and resident individuals regardless of
-#' how long each has been tracked. If no addition data are present, only
-#' the resident line is shown.
+#' the population. Unlike \code{what = "f_survival"}, this statistic is not
+#' cumulative from a fixed start date, so it stays directly comparable
+#' across groups regardless of how long each has been tracked. If the model
+#' was fit with a \code{survival_formula} (see the \code{survival_formula}
+#' and \code{survival_fill_value} arguments to \code{\link{clean_data}}),
+#' one line is plotted per covariate category (categories from multiple
+#' covariates are combined); this assumes survival covariates are
+#' categorical, which \code{survival_fill_value}'s requirements already
+#' push users toward. If no survival covariates were fit, a single,
+#' ungrouped line is plotted for the whole population -- any apparent
+#' difference between subgroups (e.g. added vs. resident individuals) is
+#' not something the model actually estimated unless a covariate
+#' distinguishing them was included.
 #' @examples
 #' \dontrun{
 #' captures <- system.file("extdata", "capture-example.csv", package = "mrmr2")
@@ -126,11 +132,15 @@ plot_model <- function(model, what) {
       summarize(date = min(.data$survey_date),
                 year = min(.data$year))
 
-    addition_tags <- if (any_additions) {
-      unique(as.character(model$data$additions$pit_tag_id))
-    } else {
-      character()
-    }
+    # Group by the model's own survival covariate(s), if any were fit,
+    # rather than assuming a particular split (e.g. added vs. resident) --
+    # this keeps the plot honest about what the model can actually
+    # distinguish. survival_covariate_df holds covariate values in their
+    # original (typically categorical) form, one row per real individual;
+    # it has only a pit_tag_id column when no survival_formula was used.
+    covariate_cols <- setdiff(names(model$data$survival_covariate_df),
+                              "pit_tag_id")
+    has_survival_covariates <- length(covariate_cols) > 0
 
     # As in what = 'f_survival', only pull the latent-state draws ("s") for
     # real individuals, rather than the full M x T array for every real and
@@ -143,19 +153,28 @@ plot_model <- function(model, what) {
       rep(seq_len(n_periods), times = length(real_idx)), "]"
     )
 
-    # Period-to-period survival: condition on being alive (state == 2) at
-    # primary period t, and ask whether the individual is still alive at
-    # t + 1. Unlike 'f_survival', this isn't cumulative from a fixed start
-    # date, so added and resident individuals are directly comparable at
-    # any shared date, regardless of how long each has been tracked.
-    p <- model$m_fit$draws(variables = s_varnames, format = "draws_df") |>
+    s_pairs <- model$m_fit$draws(variables = s_varnames, format = "draws_df") |>
       tidyr::pivot_longer(tidyselect::starts_with('s')) |>
       suppressWarnings() |>
       mutate(get_numeric_indices(.data$name)) |>
       rename(primary_period = .data$index_2) |>
-      mutate(pit_tag_id = pit_tag_ids[.data$index_1],
-             group = ifelse(.data$pit_tag_id %in% addition_tags,
-                            "Added", "Resident")) |>
+      mutate(pit_tag_id = pit_tag_ids[.data$index_1])
+
+    if (has_survival_covariates) {
+      legend_title <- paste(covariate_cols, collapse = " / ")
+      group_lookup <- model$data$survival_covariate_df |>
+        tidyr::unite("group", tidyselect::all_of(covariate_cols), sep = ", ")
+      s_pairs <- left_join(s_pairs, group_lookup, by = "pit_tag_id")
+    } else {
+      s_pairs <- mutate(s_pairs, group = "All individuals")
+    }
+
+    # Period-to-period survival: condition on being alive (state == 2) at
+    # primary period t, and ask whether the individual is still alive at
+    # t + 1. Unlike 'f_survival', this isn't cumulative from a fixed start
+    # date, so different covariate categories are directly comparable at
+    # any shared date, regardless of how long each has been tracked.
+    p <- s_pairs |>
       select("pit_tag_id", "group", "primary_period", ".draw", "value") |>
       arrange(.data$pit_tag_id, .data$.draw, .data$primary_period) |>
       group_by(.data$pit_tag_id, .data$.draw) |>
@@ -181,11 +200,19 @@ plot_model <- function(model, what) {
       ylim(0, 1) +
       ylab('Probability of survival\nto next primary period') +
       xlab('Date') +
-      scale_color_brewer('Group', type = 'qual', palette = 'Dark2') +
-      scale_fill_brewer('Group', type = 'qual', palette = 'Dark2') +
       facet_wrap(~.data$year, nrow = 1, scales = 'free_x') +
       theme(axis.text.x = element_text(angle = 90),
             legend.position = "top")
+
+    if (has_survival_covariates) {
+      p <- p +
+        scale_color_brewer(legend_title, type = 'qual', palette = 'Dark2') +
+        scale_fill_brewer(legend_title, type = 'qual', palette = 'Dark2')
+    } else {
+      p <- p +
+        scale_color_brewer(type = 'qual', palette = 'Dark2', guide = "none") +
+        scale_fill_brewer(type = 'qual', palette = 'Dark2', guide = "none")
+    }
   } else {
     survey_prim_periods <- model$data$surveys |>
       group_by(.data$primary_period) |>
