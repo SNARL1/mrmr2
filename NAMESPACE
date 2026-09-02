@@ -38,7 +38,8 @@ importFrom(ggplot2,
   scale_fill_brewer,
   theme,
   xlab,
-  ylab
+  ylab,
+  ylim
 )
 importFrom(lubridate,year)
 importFrom(readr,

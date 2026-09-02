@@ -585,19 +585,67 @@ plot_model(mod, what = 'recruitment')
 ```
 
 ```{r plot-survival}
-plot_model(mod, what = 'survival')
+plot_model(mod, what = 'f_survival')
 ```
 
-`what = 'survival'` only pulls posterior draws of the latent state (`s`)
-for translocated individuals, rather than for every individual (real and
-data-augmented pseudo-individual) tracked by the model (behavior of
-`what = 'survival'` in `mrmr`). On sites with a large superpopulation
-relative to the number of translocated individuals, this keeps memory
-use for this plot far below what it would be if the full `s` array were
-pulled and then filtered down afterward (see [An Introduction to CMR
-Analysis Using the mrmr and mrmr2
+`what = 'f_survival'` only pulls posterior draws of the latent state
+(`s`) for translocated individuals, rather than for every individual
+(real and data-augmented pseudo-individual) tracked by the model
+(behavior of `what = 'survival'` in `mrmr`). On sites with a large
+superpopulation relative to the number of translocated individuals, this
+keeps memory use for this plot far below what it would be if the full
+`s` array were pulled and then filtered down afterward (see [An
+Introduction to CMR Analysis Using the mrmr and mrmr2
 Packages](https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd)
 for details).
+
+`what = 'p_survival'` instead plots survival probability for *all*
+individuals in the population, split into two lines: individuals present
+in the addition data (translocated or reintroduced) and resident
+individuals recruited into the population without translocation. Unlike
+`what = 'f_survival'`, which shows the cumulative fraction of each
+cohort still alive since its release date, `what = 'p_survival'` plots
+the period-to-period survival probability -- the probability that an
+individual alive in one primary period is still alive in the next. This
+keeps the added and resident lines directly comparable at any shared
+date, regardless of how long each group has been tracked.
+
+```{r plot-p-survival}
+plot_model(mod, what = 'p_survival')
+```
+
+By default, `mrmr2` fits a single, population-wide survival probability
+for each primary period, shared by every individual regardless of
+whether they were added or resident. Any visual gap between the two
+lines above is therefore not evidence of a real difference in survival
+-- it reflects which individuals happened to be observed, not something
+the model actually estimated. To test whether added and resident
+individuals differ in survival, fit a model with a survival covariate
+that labels each individual by subpopulation type, following the pattern
+in [Including survival covariates](#survival-covar). Because the label
+depends on translocation status, it needs to be added to both `capture`
+and `translocation` -- some translocated individuals are never
+recaptured, so they have no row in `capture` to carry the label:
+
+```{r survival-covariate-added-resident, message=FALSE, eval=FALSE}
+capture <- capture |>
+  mutate(status = ifelse(pit_tag_id %in% translocation$pit_tag_id,
+                          "added", "resident"))
+translocation <- translocation |>
+  mutate(status = "added")
+
+data <- clean_data(
+  captures = capture,
+  surveys = survey,
+  additions = translocation,
+  survival_formula = ~ status,
+  survival_fill_value = c(status = "resident")
+  )
+```
+
+With this model, `plot_model(mod, what = 'p_survival')` reflects an
+actual estimated difference between added and resident survival (via the
+`status` coefficient in `beta_phi`), rather than noise.
 
 ## Custom visualizations
 
@@ -615,7 +663,7 @@ p2 <- p2 + ggtitle("B. Recruitment") +
   ylab("Number of adults") +
   theme_classic()
 
-p3 <- plot_model(mod, what = "survival")
+p3 <- plot_model(mod, what = "f_survival")
 p3 <- p3 + ggtitle("C. Survival of Translocated Cohorts") +
   ylab("Number of adults") + 
   theme_classic()
