@@ -67,7 +67,7 @@
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>What to plot. Must be a character string of either
-"abundance", "recruitment", or "survival".</p></dd>
+"abundance", "recruitment", "f_survival", or "p_survival".</p></dd>
 
 </dl></div>
     <div id="value">
@@ -76,11 +76,27 @@
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p>For <code>what = "survival"</code>, only the posterior draws of the
-latent state (<code>s</code>) for translocated individuals are pulled from the
-fit, rather than for every individual (real and data-augmented
-pseudo-individual) tracked by the model. This keeps memory use for this
-plot low even for sites with a large augmented superpopulation.</p>
+    <p>For <code>what = "f_survival"</code> and <code>what = "p_survival"</code>,
+only the posterior draws of the latent state (<code>s</code>) for real
+(non data-augmented) individuals are pulled from the fit, rather than for
+every individual (real and data-augmented pseudo-individual) tracked by
+the model. This keeps memory use for these plots low even for sites with
+a large augmented superpopulation.</p>
+<p><code>what = "f_survival"</code> plots the fraction of each translocated or
+reintroduced cohort estimated to still be alive, as a function of time
+since introduction – a cumulative, cohort-relative statistic that
+requires addition data and only describes translocated/reintroduced
+individuals.</p>
+<p><code>what = "p_survival"</code> instead plots the estimated period-to-period
+survival probability (the probability that an individual alive in one
+primary period is still alive in the next) for all real individuals in
+the population, split into two lines: individuals present in the
+addition data (translocated or reintroduced), and resident individuals
+recruited into the population without translocation. Unlike
+<code>what = "f_survival"</code>, this statistic is not cumulative, so it stays
+directly comparable between added and resident individuals regardless of
+how long each has been tracked. If no addition data are present, only
+the resident line is shown.</p>
     </div>
 
     <div id="ref-examples">
