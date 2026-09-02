@@ -74,7 +74,7 @@
 #' @importFrom reshape2 melt
 #' @importFrom rlang .data
 #' @importFrom tibble as_tibble
-#' @importFrom stats median quantile
+#' @importFrom stats median quantile plogis
 
 plot_model <- function(model, what) {
   valid_plots <- c("abundance", "recruitment", "f_survival", "p_survival",
