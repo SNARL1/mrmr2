@@ -823,25 +823,25 @@ this keeps memory use for this plot far below what it would be if the
 full <code>s</code> array were pulled and then filtered down afterward
 (see <a href="https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd" class="external-link">An
 Introduction to CMR Analysis Using the mrmr and mrmr2 Packages</a> for
-details). <code>what = 'f_survival'</code> plots the cumulative fraction
-of each translocated or reintroduced cohort estimated to still be alive
-as a function of time since release, so it requires addition data and
-only describes those individuals.</p>
+details).</p>
+<p><code>what = 'f_survival'</code> plots the cumulative fraction of
+each translocated or reintroduced cohort estimated to still be alive as
+a function of time since release, so it requires addition data and only
+describes those individuals (i.e., resident individuals are
+ignored).</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">'f_survival'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="intro-to-mrmr2_files/figure-html/plot-survival-1.png" class="r-plt" alt="" width="672"></p>
-<p><code>what = 'p_survival'</code> plots the period-to-period
-probability that an individual alive in one primary period is still
-alive in the next, for all individuals in the population, without the
-cumulative averaging.</p>
 <p><code>what = 'p_survival'</code> plots the estimated period-to-period
 survival probability for all individuals in the population – the
 probability that an individual alive in one primary period is still
-alive in the next. Unlike <code>what = 'f_survival'</code>, which shows
-the cumulative fraction of each cohort still alive since its release
-date, this statistic is not cumulative from a fixed start date, so it
-stays directly comparable across groups regardless of how long each has
-been tracked. Because <code>mod</code> was fit without a
+alive in the next. Each point is dated at the <em>arrival</em> primary
+period rather than the departure one, so it reads as the probability of
+having survived from the previous primary period to this one. For
+example, an overwinter transition (survival from the last primary period
+of year 1 to the first primary period of year 2) is attributed to the
+first primary period of year 2, not the last primary period of year 1.
+Because <code>mod</code> was fit without a
 <code>survival_formula</code>, the model estimates a single,
 population-wide survival probability for each primary period, shared by
 every individual – so <code>what = 'p_survival'</code> plots one
@@ -851,33 +851,34 @@ ungrouped line:</p>
 <p><img src="intro-to-mrmr2_files/figure-html/plot-p-survival-1.png" class="r-plt" alt="" width="672"></p>
 <p>If the model was instead fit with a <code>survival_formula</code>
 (see <a href="#survival-covar">Including survival covariates</a>),
-<code>what = 'p_survival'</code> plots one line per covariate category,
-so groups can only appear on this plot if the model actually
-distinguishes them. For example, to compare survival between
-translocated and resident individuals, fit a model with a survival
-covariate that labels each individual by subpopulation type. Because the
-label depends on translocation status, it needs to be added to both
-<code>capture</code> and <code>translocation</code> – some translocated
-individuals are never recaptured, so they have no row in
-<code>capture</code> to carry the label:</p>
+<code>what = 'p_survival'</code> plots one line per covariate category.
+For example, to compare survival between translocated and resident
+individuals, fit a model with a survival covariate that labels each
+individual by subpopulation type. <code>what= 'p_survival'</code> now
+plots a line for each group - translocated and resident. In this
+example, note that if some translocated individuals are never captured
+following release, they would have no row in <code>capture</code> to
+indicate their group label (i.e., as translocated). Therefore, in this
+case, the group column needs to be added to both the
+<code>capture</code> and <code>translocation</code> dataframes.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">capture</span> <span class="op">&lt;-</span> <span class="va">capture</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>status <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">pit_tag_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">translocation</span><span class="op">$</span><span class="va">pit_tag_id</span>,</span>
-<span>                          <span class="st">"added"</span>, <span class="st">"resident"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">pit_tag_id</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">translocation</span><span class="op">$</span><span class="va">pit_tag_id</span>,</span>
+<span>                          <span class="st">"tranlocated"</span>, <span class="st">"resident"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">translocation</span> <span class="op">&lt;-</span> <span class="va">translocation</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>status <span class="op">=</span> <span class="st">"added"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>group <span class="op">=</span> <span class="st">"translocated"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clean_data.html">clean_data</a></span><span class="op">(</span></span>
 <span>  captures <span class="op">=</span> <span class="va">capture</span>,</span>
 <span>  surveys <span class="op">=</span> <span class="va">survey</span>,</span>
 <span>  additions <span class="op">=</span> <span class="va">translocation</span>,</span>
-<span>  survival_formula <span class="op">=</span> <span class="op">~</span> <span class="va">status</span>,</span>
+<span>  survival_formula <span class="op">=</span> <span class="op">~</span> <span class="va">group</span>,</span>
 <span>  survival_fill_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>status <span class="op">=</span> <span class="st">"resident"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p>With this model, <code>plot_model(mod, what = 'p_survival')</code>
-plots one line per <code>status</code> category (added vs. resident),
-reflecting the model’s own <code>status</code> coefficient in
-<code>beta_phi</code>, rather than an assumed grouping.</p>
+plots one line per <code>group</code> category (translocated
+vs. resident), reflecting the model’s own <code>group</code> coefficient
+in <code>beta_phi</code>, rather than an assumed grouping.</p>
 </div>
 </div>
 <div class="section level3">
