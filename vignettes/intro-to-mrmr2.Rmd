@@ -668,7 +668,7 @@ Therefore, in this case, the group column needs to be added to both the
 ```{r survival-covariate-added-resident, message=FALSE, eval=FALSE}
 capture <- capture |>
   mutate(group = ifelse(pit_tag_id %in% translocation$pit_tag_id,
-                          "tranlocated", "resident"))
+                          "translocated", "resident"))
 translocation <- translocation |>
   mutate(group = "translocated")
 
@@ -677,7 +677,7 @@ data <- clean_data(
   surveys = survey,
   additions = translocation,
   survival_formula = ~ group,
-  survival_fill_value = c(status = "resident")
+  survival_fill_value = c(group = "resident")
   )
 ```
 
