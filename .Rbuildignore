@@ -10,3 +10,4 @@ R/compare.R
 .github
 inst/stan/twostate$
 inst/stan/twostate_threads$
+^\.claude$
