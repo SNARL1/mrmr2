@@ -685,6 +685,29 @@ With this model, `plot_model(mod, what = 'p_survival')` plots one line
 per `group` category (translocated vs. resident), reflecting the model's
 own `group` coefficient in `beta_phi`, rather than an assumed grouping.
 
+### Detection
+
+This plot shows the estimated probability of detecting an already-alive
+individual at each primary period, summarized as a posterior median with
+a 95% credible interval band. Unlike the survival plots, it reads
+directly from the model's saved `logit_detect` parameter rather than
+from posterior draws of the latent state `s`, and it only supports
+models fit without detection covariates (`capture_formula = ~ 1`) --
+fitting one causes an informative error, since detection covariates vary
+by survey occasion, often continuously, rather than by a small number of
+individual-level categories. The line is flat for `model = 'base'`,
+since detection probability is constant across the study, but varies by
+primary period for `model = 'detect_re'`, which adds between- and
+within-period random effects. For `model = 'indiv_re'`, a second, wider
+background ribbon is added showing the spread of individual-level
+detection probabilities -- flat across primary periods, since that
+random effect has no time index, reflecting between-individual
+heterogeneity rather than a trend over time.
+
+```{r plot-detection}
+plot_model(mod, what = 'detection')
+```
+
 ## Custom visualizations
 
 The default plots can be customized using standard plotting functions:
