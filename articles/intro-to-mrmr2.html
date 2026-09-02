@@ -451,160 +451,144 @@ follows:</p>
   table-layout: fixed;
   width: 100%;
 }
-.param-table col:nth-child(2), .param-table col:nth-child(3) {
-  width: 8%;
+.param-table col:nth-child(2) {
+  width: 14%;
+}
+.param-table col:nth-child(3) {
+  width: 12%;
 }
 .param-table col:nth-child(4) {
-  width: 55%;
+  width: 47%;
 }
 </style>
 <div class="param-table">
 <table class="table">
 <colgroup>
-<col width="25%">
-<col width="25%">
-<col width="25%">
-<col width="25%">
+<col>
+<col>
+<col>
+<col>
 </colgroup>
-<thead><tr class="header">
+<thead><tr>
 <th>Parameter</th>
 <th>Symbol</th>
 <th>Model</th>
 <th>Definition</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>alpha_lambda</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>α</mi><mi>λ</mi></msub><annotation encoding="application/x-tex">\alpha_\lambda</annotation></semantics></math></td>
+<td>\(\alpha_\lambda\)</td>
 <td>all</td>
-<td>Intercept of per-primary-period recruitment probability, on the
-logit scale</td>
+<td>Intercept of per-primary-period recruitment probability, on the logit scale</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>sigma_lambda</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>λ</mi></msub><annotation encoding="application/x-tex">\sigma_\lambda</annotation></semantics></math></td>
+<td>\(\sigma_\lambda\)</td>
 <td>all</td>
-<td>Standard deviation of the recruitment random effect
-(<code>eps_lambda</code>) across primary periods</td>
+<td>Standard deviation of the recruitment random effect (<code>eps_lambda</code>) across primary periods</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>eps_lambda</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mi>λ</mi></msub><annotation encoding="application/x-tex">\epsilon_\lambda</annotation></semantics></math></td>
+<td>\(\epsilon_\lambda\)</td>
 <td>all</td>
-<td>Standardized per-primary-period random effect on recruitment
-probability</td>
+<td>Standardized per-primary-period random effect on recruitment probability</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>lambda</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math></td>
+<td>\(\lambda\)</td>
 <td>all</td>
-<td>Probability that an as-yet-unrecruited individual is recruited
-during a given primary period</td>
+<td>Probability that an as-yet-unrecruited individual is recruited during a given primary period</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>beta_phi</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mi>ϕ</mi></msub><annotation encoding="application/x-tex">\beta_\phi</annotation></semantics></math></td>
+<td>\(\beta_\phi\)</td>
 <td>all</td>
-<td>Coefficients (intercept and any survival covariates) for survival
-probability, on the logit scale</td>
+<td>Coefficients (intercept and any survival covariates) for survival probability, on the logit scale</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>sigma_phi</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>ϕ</mi></msub><annotation encoding="application/x-tex">\sigma_\phi</annotation></semantics></math></td>
+<td>\(\sigma_\phi\)</td>
 <td>all</td>
-<td>Standard deviation of the survival random effect
-(<code>eps_phi</code>) across primary periods</td>
+<td>Standard deviation of the survival random effect (<code>eps_phi</code>) across primary periods</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>eps_phi</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mi>ϕ</mi></msub><annotation encoding="application/x-tex">\epsilon_\phi</annotation></semantics></math></td>
+<td>\(\epsilon_\phi\)</td>
 <td>all</td>
 <td>Per-primary-period random effect on survival probability</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>phi</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math></td>
+<td>\(\phi\)</td>
 <td>all</td>
-<td>Probability that an alive individual survives from one primary
-period to the next</td>
+<td>Probability that an alive individual survives from one primary period to the next</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>beta_detect</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mi>p</mi></msub><annotation encoding="application/x-tex">\beta_p</annotation></semantics></math></td>
+<td>\(\beta_p\)</td>
 <td>all</td>
-<td>Coefficients (intercept and any detection covariates) for detection
-probability, on the logit scale</td>
+<td>Coefficients (intercept and any detection covariates) for detection probability, on the logit scale</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>sigma_detect_period</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">period</mtext></mrow></msub><annotation encoding="application/x-tex">\sigma_{p,\text{period}}</annotation></semantics></math></td>
+<td>\(\sigma_{p,\text{period}}\)</td>
 <td><code>detect_re</code></td>
-<td>Standard deviation of the between-primary-period detection random
-effect (<code>eps_detect_period</code>)</td>
+<td>Standard deviation of the between-primary-period detection random effect (<code>eps_detect_period</code>)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>eps_detect_period</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">period</mtext></mrow></msub><annotation encoding="application/x-tex">\epsilon_{p,\text{period}}</annotation></semantics></math></td>
+<td>\(\epsilon_{p,\text{period}}\)</td>
 <td><code>detect_re</code></td>
-<td>Per-primary-period random effect on detection probability, shared by
-all surveys in that period</td>
+<td>Per-primary-period random effect on detection probability, shared by all surveys in that period</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>sigma_detect_occasion</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">occasion</mtext></mrow></msub><annotation encoding="application/x-tex">\sigma_{p,\text{occasion}}</annotation></semantics></math></td>
+<td>\(\sigma_{p,\text{occasion}}\)</td>
 <td><code>detect_re</code></td>
-<td>Standard deviation of the within-primary-period (per-survey)
-detection random effect (<code>eps_detect_occasion</code>)</td>
+<td>Standard deviation of the within-primary-period (per-survey) detection random effect (<code>eps_detect_occasion</code>)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>eps_detect_occasion</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">occasion</mtext></mrow></msub><annotation encoding="application/x-tex">\epsilon_{p,\text{occasion}}</annotation></semantics></math></td>
+<td>\(\epsilon_{p,\text{occasion}}\)</td>
 <td><code>detect_re</code></td>
-<td>Per-survey random effect on detection probability, nested within
-primary period</td>
+<td>Per-survey random effect on detection probability, nested within primary period</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>sigma_detect_indiv</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">indiv</mtext></mrow></msub><annotation encoding="application/x-tex">\sigma_{p,\text{indiv}}</annotation></semantics></math></td>
+<td>\(\sigma_{p,\text{indiv}}\)</td>
 <td><code>indiv_re</code></td>
-<td>Standard deviation of the individual-level detection random effect
-(<code>eps_detect_indiv</code>)</td>
+<td>Standard deviation of the individual-level detection random effect (<code>eps_detect_indiv</code>)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>eps_detect_indiv</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϵ</mi><mrow><mi>p</mi><mo>,</mo><mtext mathvariant="normal">indiv</mtext></mrow></msub><annotation encoding="application/x-tex">\epsilon_{p,\text{indiv}}</annotation></semantics></math></td>
+<td>\(\epsilon_{p,\text{indiv}}\)</td>
 <td><code>indiv_re</code></td>
-<td>Per-individual random effect on detection probability (individual
-detection heterogeneity,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>M</mi><mi>h</mi></msub><annotation encoding="application/x-tex">M_h</annotation></semantics></math>)</td>
+<td>Per-individual random effect on detection probability (individual detection heterogeneity, \(M_h\))</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>s</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi><annotation encoding="application/x-tex">s</annotation></semantics></math></td>
+<td>\(s\)</td>
 <td>all</td>
-<td>Latent state of each individual (not yet recruited, alive, or dead)
-in each primary period</td>
+<td>Latent state of each individual (not yet recruited, alive, or dead) in each primary period</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>N</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>N</mi><annotation encoding="application/x-tex">N</annotation></semantics></math></td>
+<td>\(N\)</td>
 <td>all</td>
-<td>Estimated population size (number of “alive” individuals) in each
-primary period</td>
+<td>Estimated population size (number of "alive" individuals) in each primary period</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>B</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math></td>
+<td>\(B\)</td>
 <td>all</td>
-<td>Estimated number of newly recruited individuals in each primary
-period</td>
+<td>Estimated number of newly recruited individuals in each primary period</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>Nsuper</code></td>
-<td><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>N</mi><mrow><mi>s</mi><mi>u</mi><mi>p</mi><mi>e</mi><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">N_{super}</annotation></semantics></math></td>
+<td>\(N_{super}\)</td>
 <td>all</td>
-<td>Estimated superpopulation size: the total number of individuals ever
-alive during the study</td>
+<td>Estimated superpopulation size: the total number of individuals ever alive during the study</td>
 </tr>
 </tbody>
 </table>
