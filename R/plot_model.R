@@ -173,7 +173,12 @@ plot_model <- function(model, what) {
     # primary period t, and ask whether the individual is still alive at
     # t + 1. Unlike 'f_survival', this isn't cumulative from a fixed start
     # date, so different covariate categories are directly comparable at
-    # any shared date, regardless of how long each has been tracked.
+    # any shared date, regardless of how long each has been tracked. Each
+    # point is dated at t + 1 (its arrival period), so e.g. an overwinter
+    # transition (whose t is the last period of one year and t + 1 the
+    # first of the next) is attributed to the start of the new field
+    # season, where it reads as "survival from the previous primary
+    # period" -- see the y-axis label.
     p <- s_pairs |>
       select("pit_tag_id", "group", "primary_period", ".draw", "value") |>
       arrange(.data$pit_tag_id, .data$.draw, .data$primary_period) |>
@@ -198,7 +203,7 @@ plot_model <- function(model, what) {
       geom_point() +
       geom_line() +
       ylim(0, 1) +
-      ylab('Probability of survival\nto next primary period') +
+      ylab('Probability of survival\nfrom previous primary period') +
       xlab('Date') +
       facet_wrap(~.data$year, nrow = 1, scales = 'free_x') +
       theme(axis.text.x = element_text(angle = 90),
