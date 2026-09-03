@@ -23,9 +23,10 @@ modeling toolbox (for that, see the RMark, unmarked, multimark or Rcapture
 packages).
 
 `mrmr2` extends the original [`mrmr`](https://github.com/SNARL1/mrmr) package
-with two optional detection-heterogeneity random-effect models and a
-lower-memory survival plotting method, and can be installed alongside `mrmr`
-without conflict.
+with two optional detection-heterogeneity random-effect models, additional
+built-in plots (period-to-period survival and detection probability,
+alongside the original cohort survival plot), and a lower-memory survival
+plotting method, and can be installed alongside `mrmr` without conflict.
 
 ## Installation
 
@@ -44,10 +45,15 @@ same model used by `mrmr`, but the `model` argument can request one of two
 optional detection random-effect extensions (`"detect_re"` for
 between-period/occasion detection variation, `"indiv_re"` for individual-level
 detection heterogeneity) when unmodeled detection variation is a concern.
-3. `plot_model()` generates plots of abundance and recruitment over time, or
-of the survival of introduced cohorts. Its survival plot pulls posterior
-draws only for the individuals it needs, keeping memory use low even for
-sites with a large augmented superpopulation.
+3. `plot_model()` generates plots of abundance, recruitment, survival, and
+detection over time. Two survival plot types are available: `what =
+'f_survival'` shows the cumulative fraction of each introduced cohort still
+alive since release, and `what = 'p_survival'` shows period-to-period
+survival probability for all individuals, optionally split by a fitted
+survival covariate. `what = 'detection'` shows estimated detection
+probability by primary period. The survival and detection plots pull
+posterior draws only for the individuals/parameters they need, keeping
+memory use low even for sites with a large augmented superpopulation.
 
 For an in-depth look at how to use these functions, see the vignette
 [An Introduction to mrmr2](https://snarl1.github.io/mrmr2/articles/intro-to-mrmr2.html). Additional details on the new functionality added to mrmr2 is provided in [An Introduction to CMR Analysis Using the mrmr and mrmr2 Packages](https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd). 
@@ -71,7 +77,7 @@ and recruitment through time in montane amphibian populations.
 
 This package is licensed under the MIT license. 
 
-Copyright 2019 Maxwell B. Joseph
+Copyright 2019-2026 Maxwell B. Joseph and Roland Knapp
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of 
 this software and associated documentation files (the "Software"), to deal in 
