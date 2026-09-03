@@ -83,10 +83,10 @@ for a narrow class of mark-recapture data (namely, those collected by
 researchers at the <a href="https://mountainlakesresearch.com" class="external-link">Mountain
 Lakes Research Group</a> (University of California, <a href="https://snarl.nrs.ucsb.edu/" class="external-link">Sierra Nevada Aquatic Research
 Laboratory</a>). It extends the original <code>mrmr</code> package with
-optional detection-heterogeneity random effects (see <a href="#detection-re">Detection random-effect models</a>) and a
-lower-memory survival plotting method, and can be installed alongside
-<code>mrmr</code> without conflict. <code>mrmr2</code> also incorporates
-numerous code fixes and improved default plots.</p>
+optional detection-heterogeneity random effects (see <a href="#detection-re">Detection random-effect models</a>), new built-in
+plots for survival and detection, and a lower-memory survival plotting
+method. It can be installed alongside <code>mrmr</code> without
+conflict.</p>
 <div class="section level3">
 <h3 id="install-latest-versions-of-cmdstanr-cmdstan-and-mrmr2-packages">Install latest versions of cmdstanr, cmdstan, and mrmr2
 packages<a class="anchor" aria-label="anchor" href="#install-latest-versions-of-cmdstanr-cmdstan-and-mrmr2-packages"></a>
@@ -888,22 +888,32 @@ already-alive individual at each primary period, summarized as a
 posterior median with a 95% credible interval band. Unlike the survival
 plots, it reads directly from the model’s saved
 <code>logit_detect</code> parameter rather than from posterior draws of
-the latent state <code>s</code>, and it only supports models fit without
-detection covariates (<code>capture_formula = ~ 1</code>) – fitting one
-causes an informative error, since detection covariates vary by survey
-occasion, often continuously, rather than by a small number of
-individual-level categories. The line is flat for
-<code>model = 'base'</code>, since detection probability is constant
-across the study, but varies by primary period for
-<code>model = 'detect_re'</code>, which adds between- and within-period
-random effects. For <code>model = 'indiv_re'</code>, a second, wider
-background ribbon is added showing the spread of individual-level
-detection probabilities – flat across primary periods, since that random
-effect has no time index, reflecting between-individual heterogeneity
-rather than a trend over time.</p>
+the latent state <code>s</code>.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_model.html">plot_model</a></span><span class="op">(</span><span class="va">mod</span>, what <span class="op">=</span> <span class="st">'detection'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="intro-to-mrmr2_files/figure-html/plot-detection-1.png" class="r-plt" alt="" width="672"></p>
+<p>For <code>model = 'base'</code>, the plotted detection probability is
+a flat line, reflecting this model’s assumption of constant detection
+across all primary periods. However, for
+<code>model = 'detect_re'</code>, detection probability varies by
+primary period, due to this model’s between- and within-period random
+effects. For <code>model = 'indiv_re'</code>, some individuals are
+consistently easier or harder to detect than others. The plot of
+detection probability for this model shows two ribbons. One represents
+the constant detection probability for <code>model = base</code> (darker
+ribbon). The second, lighter, ribbon shows variation in detection
+probability across individuals. Because that individual-level tendency
+is assumed to be constant, the ribbon is the same width in every primary
+period. .</p>
+<p><code>plot_model(mod, what = 'detection')</code> only supports models
+fit without detection covariates (<code>capture_formula = ~ 1</code>).
+Many of the factors expected to affect detection, and that could
+reasonably be included in the model as detection covariates, vary by
+survey occasion, often continuously (e.g., size, air temperature, survey
+duration). This contrasts with typical survival covariates, that are
+typically categorical. This difference precludes plots that are
+analogous to those available in
+`<code>plot_model(mod, what = 'survival')`</code>.</p>
 </div>
 </div>
 <div class="section level3">
