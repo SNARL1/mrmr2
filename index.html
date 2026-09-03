@@ -73,7 +73,7 @@
 <figure><img src="https://github.com/SNARL1/mrmr2/workflows/R-CMD-check/badge.svg" alt="build status"><figcaption aria-hidden="true">
 build status
 </figcaption></figure><p>This package automates common data processing steps for mark recapture data, with an emphasis on data collected by researchers in the <a href="https://mountainlakesresearch.com" class="external-link"><code>Mountain Lakes Research Group</code></a> (University of California, Sierra Nevada Aquatic Research Laboratory). Many of the assumptions made in the data processing and modeling are pinned to the type of capture-recapture data collected by the SNARL team, and as a result, this package should not be thought of as a general purpose mark-recapture modeling toolbox (for that, see the RMark, unmarked, multimark or Rcapture packages).</p>
-<p><code>mrmr2</code> extends the original <a href="https://github.com/SNARL1/mrmr" class="external-link"><code>mrmr</code></a> package with two optional detection-heterogeneity random-effect models and a lower-memory survival plotting method, and can be installed alongside <code>mrmr</code> without conflict.</p>
+<p><code>mrmr2</code> extends the original <a href="https://github.com/SNARL1/mrmr" class="external-link"><code>mrmr</code></a> package with two optional detection-heterogeneity random-effect models, additional built-in plots (period-to-period survival and detection probability, alongside the original cohort survival plot), and a lower-memory survival plotting method, and can be installed alongside <code>mrmr</code> without conflict.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -90,7 +90,7 @@ build status
 <li>
 <code><a href="reference/fit_model.html">fit_model()</a></code> fits a Jolly-Seber mark recapture model to quickly estimate demographic parameters and population abundance. By default this is the same model used by <code>mrmr</code>, but the <code>model</code> argument can request one of two optional detection random-effect extensions (<code>"detect_re"</code> for between-period/occasion detection variation, <code>"indiv_re"</code> for individual-level detection heterogeneity) when unmodeled detection variation is a concern.</li>
 <li>
-<code><a href="reference/plot_model.html">plot_model()</a></code> generates plots of abundance and recruitment over time, or of the survival of introduced cohorts. Its survival plot pulls posterior draws only for the individuals it needs, keeping memory use low even for sites with a large augmented superpopulation.</li>
+<code><a href="reference/plot_model.html">plot_model()</a></code> generates plots of abundance, recruitment, survival, and detection over time. Two survival plot types are available: <code>what = 'f_survival'</code> shows the cumulative fraction of each introduced cohort still alive since release, and <code>what = 'p_survival'</code> shows period-to-period survival probability for all individuals, optionally split by a fitted survival covariate. <code>what = 'detection'</code> shows estimated detection probability by primary period. The survival and detection plots pull posterior draws only for the individuals/parameters they need, keeping memory use low even for sites with a large augmented superpopulation.</li>
 </ol>
 <p>For an in-depth look at how to use these functions, see the vignette <a href="https://snarl1.github.io/mrmr2/articles/intro-to-mrmr2.html" class="external-link">An Introduction to mrmr2</a>. Additional details on the new functionality added to mrmr2 is provided in <a href="https://github.com/SNARL1/mrmr-revisited/blob/main/introduction-to-cmr-with-mrmr.qmd" class="external-link">An Introduction to CMR Analysis Using the mrmr and mrmr2 Packages</a>.</p>
 </div>
@@ -103,7 +103,7 @@ build status
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
 <p>This package is licensed under the MIT license.</p>
-<p>Copyright 2019 Maxwell B. Joseph</p>
+<p>Copyright 2019-2026 Maxwell B. Joseph and Roland Knapp</p>
 <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
 <p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
 <p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
